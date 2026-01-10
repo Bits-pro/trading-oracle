@@ -228,6 +228,55 @@ celery -A trading_oracle worker -l info
 celery -A trading_oracle beat -l info
 ```
 
+### Quick Start Script
+
+For faster setup, use the quick start script:
+
+```bash
+chmod +x quickstart.sh
+./quickstart.sh
+```
+
+This will:
+- Create and activate virtual environment
+- Install all dependencies
+- Run migrations
+- Create superuser (if needed)
+- Initialize symbols, timeframes, and features
+- Check Redis connection
+
+### Management Commands
+
+#### Initialize Oracle Data
+
+```bash
+python manage.py init_oracle
+```
+
+This command initializes the database with:
+- Default market types (SPOT, PERPETUAL, FUTURES, CFD)
+- Standard timeframes (15m, 1h, 4h, 1d, 1w)
+- Gold symbols (XAUUSD, PAXGUSDT)
+- Crypto symbols (BTC, ETH, SOL, BNB, XRP, ADA)
+- All 50+ features with default weights
+
+#### Run Analysis Manually
+
+```bash
+# Analyze specific symbols
+python manage.py run_analysis --symbols BTCUSDT ETHUSDT --timeframes 1h 4h
+
+# With verbose output
+python manage.py run_analysis --symbols BTCUSDT --verbose
+
+# Full options
+python manage.py run_analysis \
+  --symbols BTCUSDT ETHUSDT XAUUSD \
+  --timeframes 1h 4h 1d \
+  --market-types SPOT PERPETUAL \
+  --verbose
+```
+
 ### Using the API
 
 #### 1. Trigger Analysis
