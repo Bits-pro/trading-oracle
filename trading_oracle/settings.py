@@ -37,10 +37,20 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # Third-party apps
+    'rest_framework',
+    'corsheaders',
+    'django_celery_beat',
+    'django_celery_results',
+
+    # Project apps
+    'oracle',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -120,3 +130,139 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# Django REST Framework
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 50,
+    'DEFAULT_FILTER_BACKENDS': [
+        'rest_framework.filters.SearchFilter',
+        'rest_framework.filters.OrderingFilter',
+    ],
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    ],
+    'DATETIME_FORMAT': '%Y-%m-%dT%H:%M:%S.%fZ',
+}
+
+
+# CORS Settings
+CORS_ALLOW_ALL_ORIGINS = DEBUG  # Only in development
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://localhost:8000",
+]
+
+
+# Celery Configuration
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'django-db'
+CELERY_CACHE_BACKEND = 'django-cache'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 minutes
+
+# Celery Beat Schedule (Periodic Tasks)
+CELERY_BEAT_SCHEDULE = {
+    'fetch-market-data': {
+        'task': 'oracle.tasks.fetch_market_data',
+        'schedule': 3600.0,  # Every hour
+    },
+    'fetch-derivatives-data': {
+        'task': 'oracle.tasks.fetch_derivatives_data',
+        'schedule': 900.0,  # Every 15 minutes
+    },
+    'fetch-macro-data': {
+        'task': 'oracle.tasks.fetch_macro_data',
+        'schedule': 3600.0,  # Every hour
+    },
+    'cleanup-old-data': {
+        'task': 'oracle.tasks.cleanup_old_data',
+        'schedule': 86400.0,  # Daily
+    },
+}
+
+
+# Logging Configuration
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+        'file': {
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR / 'logs' / 'trading_oracle.log',
+            'formatter': 'verbose',
+        },
+    },
+    'root': {
+        'handlers': ['console', 'file'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'oracle': {
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    },
+}
+
+
+# Trading Oracle Specific Settings
+ORACLE_CONFIG = {
+    # Default exchanges for crypto data
+    'CRYPTO_EXCHANGE': 'binance',
+
+    # Feature weights per timeframe (can be overridden in DB)
+    'DEFAULT_FEATURE_WEIGHTS': {
+        'SHORT': {
+            'RSI': 1.2,
+            'MACD': 1.0,
+            'Stochastic': 1.1,
+            'BollingerBands': 1.1,
+            'VWAP': 1.3,
+            'VolumeRatio': 1.2,
+        },
+        'MEDIUM': {
+            'ADX': 1.2,
+            'EMA_20_50': 1.3,
+            'Supertrend': 1.2,
+            'DXY': 1.0,
+            'RealYields': 1.1,
+        },
+        'LONG': {
+            'ADX': 1.3,
+            'EMA_20_50': 1.5,
+            'DXY': 1.4,
+            'RealYields': 1.5,
+        },
+    },
+
+    # Analysis limits
+    'MAX_CANDLES': 500,
+    'MIN_CANDLES': 100,
+
+    # Risk management defaults
+    'DEFAULT_STOP_MULTIPLIER': 2.0,
+    'DEFAULT_RISK_REWARD': 2.5,
+}
