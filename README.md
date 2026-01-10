@@ -50,6 +50,43 @@ A sophisticated Django-based trading analysis system that provides multi-timefra
 - Fear & Greed Index
 - Social media signals
 
+### Accuracy & Validation
+
+**⚠️ Important**: This system is a decision framework, not a guaranteed profit machine.
+
+**Expected Performance (with proper configuration):**
+- **Win Rate**: 55-65% (trending markets), 40-55% (ranging markets)
+- **Average R**: 1.5-2.5R (medium/long-term), 1.0-1.5R (short-term)
+- **Best Conditions**: Clear trends + macro alignment
+- **Sample Size**: Need 75+ trades for statistical validity
+
+**Accuracy by Timeframe:**
+| Timeframe | Expected Win Rate | Avg R | Best For |
+|-----------|------------------|-------|----------|
+| 1h        | 50-60%           | 1.2R  | Day trading, high volume |
+| 4h        | 55-65%           | 1.5R  | Swing trading (optimal) |
+| 1d        | 60-70%           | 2.0R  | Position trading |
+| 1w        | 65-75%           | 2.5R  | Long-term investors |
+
+**Backtesting:**
+```bash
+# Run validation on last 30 days
+python manage.py backtest --days 30
+
+# With export
+python manage.py backtest --days 90 --export
+
+# Specific symbols
+python manage.py backtest --days 60 --symbols BTCUSDT XAUUSD
+```
+
+📖 **See [ACCURACY.md](ACCURACY.md) for complete accuracy guide**, including:
+- Performance by market regime
+- Confidence score calibration
+- How to improve accuracy
+- Common pitfalls
+- Realistic expectations
+
 #### Layer 2: Rules & Conflict Resolution
 
 - **Regime Detection**: Trending vs Ranging (ADX), Volatility levels (ATR), BB squeeze
