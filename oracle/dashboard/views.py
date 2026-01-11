@@ -184,7 +184,7 @@ def feature_analysis(request):
 
             # Get decisions using this feature (optimized count)
             decisions_count = Decision.objects.filter(
-                featurecontribution__feature=feature,
+                feature_contributions__feature=feature,
                 created_at__gte=start_date
             ).distinct().count()
 
