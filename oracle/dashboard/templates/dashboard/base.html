@@ -39,6 +39,17 @@
         .consensus-MODERATE_CONSENSUS { @apply bg-blue-100 text-blue-800; }
         .consensus-WEAK_CONSENSUS { @apply bg-yellow-100 text-yellow-800; }
         .consensus-NO_CONSENSUS { @apply bg-red-100 text-red-800; }
+
+        .chart-frame {
+            height: 16rem;
+            max-height: 16rem;
+            overflow: hidden;
+        }
+
+        .chart-frame canvas {
+            height: 100% !important;
+            width: 100% !important;
+        }
     </style>
 </head>
 <body class="h-full">

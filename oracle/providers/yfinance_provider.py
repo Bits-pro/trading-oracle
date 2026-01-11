@@ -3,6 +3,7 @@ YFinance Provider for traditional markets
 Gold (XAUUSD), stocks, indices, ETFs, bonds, etc.
 """
 import yfinance as yf
+import logging
 import pandas as pd
 from typing import Dict, List, Optional
 from datetime import datetime, timedelta
@@ -254,6 +255,8 @@ class MacroDataProvider(YFinanceProvider):
     Specialized provider for macro economic data
     """
 
+    logger = logging.getLogger(__name__)
+
     def fetch_all_macro_indicators(self) -> Dict[str, pd.DataFrame]:
         """
         Fetch all macro indicators at once
@@ -272,8 +275,11 @@ class MacroDataProvider(YFinanceProvider):
                     timeframe='1d',
                     limit=100
                 )
+                if df.empty:
+                    self.logger.warning("Macro indicator %s returned no data.", symbol)
+                    continue
                 indicators[symbol] = df
             except Exception as e:
-                print(f"Error fetching {symbol}: {e}")
+                self.logger.warning("Error fetching macro indicator %s: %s", symbol, e)
 
         return indicators
