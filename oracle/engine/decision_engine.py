@@ -144,6 +144,15 @@ class Layer1Scorer:
             contribution = weight * result.direction * result.strength
             total_score += contribution
 
+            # Sanitize metadata - convert any boolean values to strings
+            sanitized_metadata = {}
+            if result.metadata:
+                for key, value in result.metadata.items():
+                    if isinstance(value, bool):
+                        sanitized_metadata[key] = 'YES' if value else 'NO'
+                    else:
+                        sanitized_metadata[key] = value
+
             contributions.append({
                 'name': result.name,
                 'category': result.category,
@@ -153,7 +162,7 @@ class Layer1Scorer:
                 'weight': weight,
                 'contribution': contribution,
                 'explanation': result.explanation,
-                'metadata': result.metadata
+                'metadata': sanitized_metadata
             })
 
         # Sort by absolute contribution
