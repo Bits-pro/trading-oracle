@@ -1,0 +1,251 @@
+INFO 2026-01-11 04:19:23,965 autoreload Watching for file changes with StatReloader
+INFO 2026-01-11 04:20:14,931 autoreload Watching for file changes with StatReloader
+WARNING 2026-01-11 04:20:18,436 log Not Found: /
+WARNING 2026-01-11 04:20:18,437 basehttp "GET / HTTP/1.1" 404 2464
+WARNING 2026-01-11 04:20:18,775 log Not Found: /
+WARNING 2026-01-11 04:20:18,778 basehttp "GET / HTTP/1.1" 404 2464
+INFO 2026-01-11 04:20:28,899 basehttp "GET /api HTTP/1.1" 301 0
+INFO 2026-01-11 04:20:28,949 basehttp "GET /api/ HTTP/1.1" 200 6206
+INFO 2026-01-11 04:20:28,983 basehttp "GET /static/rest_framework/js/ajax-form.js HTTP/1.1" 200 3796
+INFO 2026-01-11 04:20:28,984 basehttp "GET /static/rest_framework/css/default.css HTTP/1.1" 200 1152
+INFO 2026-01-11 04:20:28,985 basehttp "GET /static/rest_framework/css/prettify.css HTTP/1.1" 200 817
+INFO 2026-01-11 04:20:28,986 basehttp "GET /static/rest_framework/css/bootstrap-tweaks.css HTTP/1.1" 200 3426
+INFO 2026-01-11 04:20:28,989 basehttp "GET /static/rest_framework/js/csrf.js HTTP/1.1" 200 1793
+INFO 2026-01-11 04:20:28,989 basehttp "GET /static/rest_framework/js/default.js HTTP/1.1" 200 1268
+INFO 2026-01-11 04:20:28,990 basehttp "GET /static/rest_framework/js/prettify-min.js HTTP/1.1" 200 13632
+INFO 2026-01-11 04:20:28,991 basehttp "GET /static/rest_framework/js/load-ajax-form.js HTTP/1.1" 200 59
+INFO 2026-01-11 04:20:28,991 basehttp "GET /static/rest_framework/js/bootstrap.min.js HTTP/1.1" 200 39680
+INFO 2026-01-11 04:20:28,991 basehttp "GET /static/rest_framework/js/jquery-3.7.1.min.js HTTP/1.1" 200 87533
+INFO 2026-01-11 04:20:28,991 basehttp "GET /static/rest_framework/css/bootstrap.min.css HTTP/1.1" 200 121457
+INFO 2026-01-11 04:20:29,004 basehttp "GET /static/rest_framework/img/grid.png HTTP/1.1" 200 1458
+INFO 2026-01-11 04:21:01,867 autoreload Watching for file changes with StatReloader
+WARNING 2026-01-11 04:21:09,074 log Not Found: /
+WARNING 2026-01-11 04:21:09,075 basehttp "GET / HTTP/1.1" 404 2464
+INFO 2026-01-11 04:25:53,339 autoreload Watching for file changes with StatReloader
+WARNING 2026-01-11 04:25:57,280 log Not Found: /
+WARNING 2026-01-11 04:25:57,281 basehttp "GET / HTTP/1.1" 404 2464
+WARNING 2026-01-11 04:26:00,176 log Not Found: /
+WARNING 2026-01-11 04:26:00,177 basehttp "GET / HTTP/1.1" 404 2464
+INFO 2026-01-11 04:30:16,656 autoreload Watching for file changes with StatReloader
+WARNING 2026-01-11 04:30:20,420 log Not Found: /dashboard/features/
+WARNING 2026-01-11 04:30:20,421 basehttp "GET /dashboard/features/ HTTP/1.1" 404 2539
+INFO 2026-01-11 04:33:09,168 autoreload Watching for file changes with StatReloader
+INFO 2026-01-11 04:33:28,152 autoreload Watching for file changes with StatReloader
+INFO 2026-01-11 04:35:29,080 autoreload Watching for file changes with StatReloader
+INFO 2026-01-11 04:35:36,886 basehttp "GET /dashboard/features/ HTTP/1.1" 200 11959
+ERROR 2026-01-11 04:35:37,457 log Internal Server Error: /dashboard/api/chart/feature-power/
+Traceback (most recent call last):
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/trading_oracle/oracle/dashboard/views.py", line 439, in api_feature_power_chart
+    feature_power = FeatureContribution.objects.filter(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/db/models/manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/db/models/query.py", line 1495, in filter
+    return self._filter_or_exclude(False, args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/db/models/query.py", line 1513, in _filter_or_exclude
+    clone._filter_or_exclude_inplace(negate, args, kwargs)
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/db/models/query.py", line 1523, in _filter_or_exclude_inplace
+    self._query.add_q(Q(*args, **kwargs))
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/db/models/sql/query.py", line 1646, in add_q
+    clause, _ = self._add_q(q_object, can_reuse)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/db/models/sql/query.py", line 1678, in _add_q
+    child_clause, needed_inner = self.build_filter(
+                                 ^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/db/models/sql/query.py", line 1588, in build_filter
+    condition = self.build_lookup(lookups, col, value)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/db/models/sql/query.py", line 1402, in build_lookup
+    lhs = self.try_transform(lhs, name, lookups)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/db/models/sql/query.py", line 1458, in try_transform
+    raise FieldError(
+django.core.exceptions.FieldError: Unsupported lookup 'timestamp__gte' for ForeignKey or join on the field not permitted.
+ERROR 2026-01-11 04:35:37,459 basehttp "GET /dashboard/api/chart/feature-power/?limit=15&days=30 HTTP/1.1" 500 117137
+INFO 2026-01-11 04:35:42,519 basehttp "GET / HTTP/1.1" 302 0
+ERROR 2026-01-11 04:35:42,551 log Internal Server Error: /dashboard/
+Traceback (most recent call last):
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/trading_oracle/oracle/dashboard/views.py", line 33, in dashboard_home
+    decisions_24h = Decision.objects.filter(timestamp__gte=last_24h).count()
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/db/models/manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/db/models/query.py", line 1495, in filter
+    return self._filter_or_exclude(False, args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/db/models/query.py", line 1513, in _filter_or_exclude
+    clone._filter_or_exclude_inplace(negate, args, kwargs)
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/db/models/query.py", line 1523, in _filter_or_exclude_inplace
+    self._query.add_q(Q(*args, **kwargs))
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/db/models/sql/query.py", line 1646, in add_q
+    clause, _ = self._add_q(q_object, can_reuse)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/db/models/sql/query.py", line 1678, in _add_q
+    child_clause, needed_inner = self.build_filter(
+                                 ^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/db/models/sql/query.py", line 1526, in build_filter
+    lookups, parts, reffed_expression = self.solve_lookup_type(arg, summarize)
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/db/models/sql/query.py", line 1333, in solve_lookup_type
+    _, field, _, lookup_parts = self.names_to_path(lookup_splitted, self.get_meta())
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/db/models/sql/query.py", line 1806, in names_to_path
+    raise FieldError(
+django.core.exceptions.FieldError: Cannot resolve keyword 'timestamp' into field. Choices are: bias, confidence, created_at, entry_price, feature_contributions, id, invalidation_conditions, market_type, market_type_id, raw_score, regime_context, risk_reward, signal, stop_loss, symbol, symbol_id, take_profit, timeframe, timeframe_id, top_drivers
+ERROR 2026-01-11 04:35:42,552 basehttp "GET /dashboard/ HTTP/1.1" 500 115418
+INFO 2026-01-11 04:38:34,905 autoreload Watching for file changes with StatReloader
+ERROR 2026-01-11 04:38:40,718 log Internal Server Error: /dashboard/
+Traceback (most recent call last):
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/trading_oracle/oracle/dashboard/views.py", line 33, in dashboard_home
+    decisions_24h = Decision.objects.filter(timestamp__gte=last_24h).count()
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/db/models/manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/db/models/query.py", line 1495, in filter
+    return self._filter_or_exclude(False, args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/db/models/query.py", line 1513, in _filter_or_exclude
+    clone._filter_or_exclude_inplace(negate, args, kwargs)
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/db/models/query.py", line 1523, in _filter_or_exclude_inplace
+    self._query.add_q(Q(*args, **kwargs))
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/db/models/sql/query.py", line 1646, in add_q
+    clause, _ = self._add_q(q_object, can_reuse)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/db/models/sql/query.py", line 1678, in _add_q
+    child_clause, needed_inner = self.build_filter(
+                                 ^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/db/models/sql/query.py", line 1526, in build_filter
+    lookups, parts, reffed_expression = self.solve_lookup_type(arg, summarize)
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/db/models/sql/query.py", line 1333, in solve_lookup_type
+    _, field, _, lookup_parts = self.names_to_path(lookup_splitted, self.get_meta())
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/db/models/sql/query.py", line 1806, in names_to_path
+    raise FieldError(
+django.core.exceptions.FieldError: Cannot resolve keyword 'timestamp' into field. Choices are: bias, confidence, created_at, entry_price, feature_contributions, id, invalidation_conditions, market_type, market_type_id, raw_score, regime_context, risk_reward, signal, stop_loss, symbol, symbol_id, take_profit, timeframe, timeframe_id, top_drivers
+ERROR 2026-01-11 04:38:40,726 basehttp "GET /dashboard/ HTTP/1.1" 500 115555
+INFO 2026-01-11 04:39:17,511 autoreload Watching for file changes with StatReloader
+INFO 2026-01-11 04:39:25,381 basehttp "GET / HTTP/1.1" 302 0
+ERROR 2026-01-11 04:39:25,429 log Internal Server Error: /dashboard/
+Traceback (most recent call last):
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/trading_oracle/oracle/dashboard/views.py", line 33, in dashboard_home
+    decisions_24h = Decision.objects.filter(timestamp__gte=last_24h).count()
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/db/models/manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/db/models/query.py", line 1495, in filter
+    return self._filter_or_exclude(False, args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/db/models/query.py", line 1513, in _filter_or_exclude
+    clone._filter_or_exclude_inplace(negate, args, kwargs)
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/db/models/query.py", line 1523, in _filter_or_exclude_inplace
+    self._query.add_q(Q(*args, **kwargs))
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/db/models/sql/query.py", line 1646, in add_q
+    clause, _ = self._add_q(q_object, can_reuse)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/db/models/sql/query.py", line 1678, in _add_q
+    child_clause, needed_inner = self.build_filter(
+                                 ^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/db/models/sql/query.py", line 1526, in build_filter
+    lookups, parts, reffed_expression = self.solve_lookup_type(arg, summarize)
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/db/models/sql/query.py", line 1333, in solve_lookup_type
+    _, field, _, lookup_parts = self.names_to_path(lookup_splitted, self.get_meta())
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/db/models/sql/query.py", line 1806, in names_to_path
+    raise FieldError(
+django.core.exceptions.FieldError: Cannot resolve keyword 'timestamp' into field. Choices are: bias, confidence, created_at, entry_price, feature_contributions, id, invalidation_conditions, market_type, market_type_id, raw_score, regime_context, risk_reward, signal, stop_loss, symbol, symbol_id, take_profit, timeframe, timeframe_id, top_drivers
+ERROR 2026-01-11 04:39:25,433 basehttp "GET /dashboard/ HTTP/1.1" 500 115418
+INFO 2026-01-11 04:40:09,125 autoreload Watching for file changes with StatReloader
+INFO 2026-01-11 04:40:13,555 basehttp "GET /dashboard/ HTTP/1.1" 200 19273
+INFO 2026-01-11 04:40:13,711 basehttp "GET /dashboard/api/chart/decisions/?days=30 HTTP/1.1" 200 30
+INFO 2026-01-11 04:40:13,711 basehttp "GET /dashboard/api/chart/confidence/?days=30 HTTP/1.1" 200 100
+INFO 2026-01-11 04:40:26,045 basehttp "GET / HTTP/1.1" 302 0
+INFO 2026-01-11 04:40:26,232 basehttp "GET /dashboard/ HTTP/1.1" 200 19273
+INFO 2026-01-11 04:40:26,864 basehttp "GET /dashboard/api/chart/decisions/?days=30 HTTP/1.1" 200 30
+INFO 2026-01-11 04:40:26,866 basehttp "GET /dashboard/api/chart/confidence/?days=30 HTTP/1.1" 200 100
+INFO 2026-01-11 04:43:17,171 basehttp "GET / HTTP/1.1" 302 0
+INFO 2026-01-11 04:43:17,192 basehttp "GET /dashboard/ HTTP/1.1" 200 19273
+INFO 2026-01-11 04:43:17,429 basehttp "GET /dashboard/api/chart/decisions/?days=30 HTTP/1.1" 200 30
+INFO 2026-01-11 04:43:17,432 basehttp "GET /dashboard/api/chart/confidence/?days=30 HTTP/1.1" 200 100
+INFO 2026-01-11 04:44:51,482 basehttp "GET /dashboard/features/ HTTP/1.1" 200 11959
+INFO 2026-01-11 04:44:51,572 basehttp "GET /dashboard/api/chart/feature-power/?limit=15&days=30 HTTP/1.1" 200 216
+INFO 2026-01-11 04:45:20,530 basehttp "GET /dashboard/features/ HTTP/1.1" 200 11959
+INFO 2026-01-11 04:45:20,677 basehttp "GET /dashboard/api/chart/feature-power/?limit=15&days=30 HTTP/1.1" 200 216
+INFO 2026-01-11 04:45:20,995 basehttp "GET /dashboard/features/ HTTP/1.1" 200 11959
+INFO 2026-01-11 04:45:21,061 basehttp "GET /dashboard/api/chart/feature-power/?limit=15&days=30 HTTP/1.1" 200 216
+INFO 2026-01-11 04:45:22,654 basehttp "GET /dashboard/features/ HTTP/1.1" 200 11959
+INFO 2026-01-11 04:45:22,710 basehttp "GET /dashboard/api/chart/feature-power/?limit=15&days=30 HTTP/1.1" 200 216
+INFO 2026-01-11 04:45:24,515 basehttp "GET /dashboard/features/ HTTP/1.1" 200 11959
+INFO 2026-01-11 04:45:24,558 basehttp "GET /dashboard/api/chart/feature-power/?limit=15&days=30 HTTP/1.1" 200 216
+ERROR 2026-01-11 04:47:03,852 base Failed to get ticker 'DX-Y.NYB' reason: Expecting value: line 1 column 1 (char 0)
+ERROR 2026-01-11 04:47:03,856 base DX-Y.NYB: No timezone found, symbol may be delisted
+ERROR 2026-01-11 04:47:05,361 base Failed to get ticker '^VIX' reason: Expecting value: line 1 column 1 (char 0)
+ERROR 2026-01-11 04:47:05,363 base ^VIX: No timezone found, symbol may be delisted
+ERROR 2026-01-11 04:47:06,611 base Failed to get ticker '^TNX' reason: Expecting value: line 1 column 1 (char 0)
+ERROR 2026-01-11 04:47:06,611 base ^TNX: No timezone found, symbol may be delisted
+ERROR 2026-01-11 04:47:07,866 base Failed to get ticker 'TIP' reason: Expecting value: line 1 column 1 (char 0)
+ERROR 2026-01-11 04:47:07,870 base TIP: No timezone found, symbol may be delisted
+ERROR 2026-01-11 04:47:09,100 base Failed to get ticker '^GSPC' reason: Expecting value: line 1 column 1 (char 0)
+ERROR 2026-01-11 04:47:09,101 base ^GSPC: No timezone found, symbol may be delisted
+ERROR 2026-01-11 04:47:31,157 base Failed to get ticker 'DX-Y.NYB' reason: Expecting value: line 1 column 1 (char 0)
+ERROR 2026-01-11 04:47:31,162 base DX-Y.NYB: No timezone found, symbol may be delisted
+ERROR 2026-01-11 04:47:32,459 base Failed to get ticker '^VIX' reason: Expecting value: line 1 column 1 (char 0)
+ERROR 2026-01-11 04:47:32,460 base ^VIX: No timezone found, symbol may be delisted
+ERROR 2026-01-11 04:47:33,835 base Failed to get ticker '^TNX' reason: Expecting value: line 1 column 1 (char 0)
+ERROR 2026-01-11 04:47:33,836 base ^TNX: No timezone found, symbol may be delisted
+ERROR 2026-01-11 04:47:35,394 base Failed to get ticker 'TIP' reason: Expecting value: line 1 column 1 (char 0)
+ERROR 2026-01-11 04:47:35,394 base TIP: No timezone found, symbol may be delisted
+ERROR 2026-01-11 04:47:36,522 base Failed to get ticker '^GSPC' reason: Expecting value: line 1 column 1 (char 0)
+ERROR 2026-01-11 04:47:36,523 base ^GSPC: No timezone found, symbol may be delisted
+INFO 2026-01-11 04:50:17,241 autoreload Watching for file changes with StatReloader
+INFO 2026-01-11 04:50:26,912 basehttp "GET /dashboard/features/ HTTP/1.1" 200 11959
+INFO 2026-01-11 04:50:28,511 basehttp "GET /dashboard/api/chart/feature-power/?limit=15&days=30 HTTP/1.1" 200 216
+INFO 2026-01-11 04:50:32,829 basehttp "GET / HTTP/1.1" 302 0
+INFO 2026-01-11 04:50:32,855 basehttp "GET /dashboard/ HTTP/1.1" 200 23472
+INFO 2026-01-11 04:50:32,992 basehttp "GET /dashboard/api/chart/decisions/?days=30 HTTP/1.1" 200 75
+INFO 2026-01-11 04:50:32,994 basehttp "GET /dashboard/api/chart/confidence/?days=30 HTTP/1.1" 200 100
+INFO 2026-01-11 04:56:30,804 autoreload Watching for file changes with StatReloader
+INFO 2026-01-11 04:56:34,981 basehttp "GET / HTTP/1.1" 302 0
+INFO 2026-01-11 04:56:35,039 basehttp "GET /dashboard/ HTTP/1.1" 200 23472
+INFO 2026-01-11 04:56:35,184 basehttp "GET /dashboard/api/chart/decisions/?days=30 HTTP/1.1" 200 75
+INFO 2026-01-11 04:56:35,186 basehttp "GET /dashboard/api/chart/confidence/?days=30 HTTP/1.1" 200 100
+ERROR 2026-01-11 04:58:50,766 base Failed to get ticker 'DX-Y.NYB' reason: Expecting value: line 1 column 1 (char 0)
+ERROR 2026-01-11 04:58:50,783 base DX-Y.NYB: No timezone found, symbol may be delisted
+ERROR 2026-01-11 04:58:52,359 base Failed to get ticker '^VIX' reason: Expecting value: line 1 column 1 (char 0)
+ERROR 2026-01-11 04:58:52,360 base ^VIX: No timezone found, symbol may be delisted
+ERROR 2026-01-11 04:58:53,559 base Failed to get ticker '^TNX' reason: Expecting value: line 1 column 1 (char 0)
+ERROR 2026-01-11 04:58:53,562 base ^TNX: No timezone found, symbol may be delisted
+ERROR 2026-01-11 04:58:54,882 base Failed to get ticker 'TIP' reason: Expecting value: line 1 column 1 (char 0)
+ERROR 2026-01-11 04:58:54,883 base TIP: No timezone found, symbol may be delisted
+ERROR 2026-01-11 04:58:56,075 base Failed to get ticker '^GSPC' reason: Expecting value: line 1 column 1 (char 0)
+ERROR 2026-01-11 04:58:56,076 base ^GSPC: No timezone found, symbol may be delisted
