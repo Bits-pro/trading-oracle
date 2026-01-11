@@ -72,7 +72,11 @@
             <div class="flex justify-between">
                 <span class="text-sm text-gray-500">Volume:</span>
                 <span class="text-sm font-semibold text-gray-900">
-                    {{ latest_market_data|get_item:symbol.symbol|get_item:'volume'|floatformat:0 }}
+                    {% if latest_market_data|get_item:symbol.symbol|get_item:'volume' is not None %}
+                        {{ latest_market_data|get_item:symbol.symbol|get_item:'volume'|floatformat:0 }}
+                    {% else %}
+                        —
+                    {% endif %}
                 </span>
             </div>
             <div class="flex justify-between">
@@ -81,6 +85,11 @@
                     {{ latest_market_data|get_item:symbol.symbol|get_item:'timestamp'|timesince }} ago
                 </span>
             </div>
+            {% if latest_market_data|get_item:symbol.symbol|get_item:'source' == 'decision' %}
+            <div class="text-xs text-gray-400">
+                Source: last decision
+            </div>
+            {% endif %}
         </div>
         {% else %}
         <p class="text-sm text-gray-500">No market data available</p>

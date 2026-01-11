@@ -271,6 +271,17 @@ def live_monitor(request):
                 'close': float(latest.close),
                 'volume': float(latest.volume),
                 'timestamp': latest.timestamp,
+                'source': 'market',
+            }
+            continue
+
+        latest_decision = Decision.objects.filter(symbol=symbol).order_by('-created_at').first()
+        if latest_decision and latest_decision.entry_price is not None:
+            latest_market_data[symbol.symbol] = {
+                'close': float(latest_decision.entry_price),
+                'volume': None,
+                'timestamp': latest_decision.created_at,
+                'source': 'decision',
             }
 
     context = {
