@@ -71,6 +71,10 @@
                                    class="{% if request.resolver_match.url_name == 'home' %}bg-indigo-700{% else %}hover:bg-indigo-500{% endif %} text-white px-3 py-2 rounded-md text-sm font-medium">
                                     <i class="fas fa-home mr-1"></i> Overview
                                 </a>
+                                <a href="{% url 'dashboard:indicators' %}"
+                                   class="{% if request.resolver_match.url_name == 'indicators' %}bg-indigo-700{% else %}hover:bg-indigo-500{% endif %} text-white px-3 py-2 rounded-md text-sm font-medium">
+                                    <i class="fas fa-tachometer-alt mr-1"></i> Indicators
+                                </a>
                                 <a href="{% url 'dashboard:features' %}"
                                    class="{% if request.resolver_match.url_name == 'features' %}bg-indigo-700{% else %}hover:bg-indigo-500{% endif %} text-white px-3 py-2 rounded-md text-sm font-medium">
                                     <i class="fas fa-chart-bar mr-1"></i> Features

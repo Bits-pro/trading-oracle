@@ -1,0 +1,190 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Indicators Overview - Trading Oracle{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="mb-6">
+    <div class="flex justify-between items-start">
+        <div>
+            <h2 class="text-3xl font-bold text-gray-900">Indicators Overview</h2>
+            <p class="mt-1 text-sm text-gray-600">Live indicator values and power for each symbol</p>
+        </div>
+
+        <!-- Filters -->
+        <div class="flex gap-3">
+            <form method="get" class="flex gap-2">
+                <select name="symbol" class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm" onchange="this.form.submit()">
+                    <option value="">All Symbols</option>
+                    {% for sym in all_symbols %}
+                    <option value="{{ sym.symbol }}" {% if sym.symbol == symbol_filter %}selected{% endif %}>{{ sym.symbol }}</option>
+                    {% endfor %}
+                </select>
+
+                <select name="timeframe" class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm" onchange="this.form.submit()">
+                    {% for tf in all_timeframes %}
+                    <option value="{{ tf.name }}" {% if tf.name == timeframe_filter %}selected{% endif %}>{{ tf.name }}</option>
+                    {% endfor %}
+                </select>
+
+                <select name="market_type" class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm" onchange="this.form.submit()">
+                    {% for mt in all_market_types %}
+                    <option value="{{ mt.name }}" {% if mt.name == market_type_filter %}selected{% endif %}>{{ mt.name }}</option>
+                    {% endfor %}
+                </select>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% if not symbol_data %}
+<!-- No Data Alert -->
+<div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+    <div class="flex">
+        <div class="flex-shrink-0">
+            <i class="fas fa-exclamation-triangle text-yellow-400 text-xl"></i>
+        </div>
+        <div class="ml-3">
+            <p class="text-sm text-yellow-700">
+                <strong>No indicator data available.</strong> Run an analysis to generate indicator values.
+            </p>
+            <p class="mt-2 text-sm text-yellow-700">
+                <a href="{% url 'dashboard:home' %}" class="font-medium underline hover:text-yellow-600">
+                    Go to Home page and click "Run Analysis"
+                </a>
+            </p>
+        </div>
+    </div>
+</div>
+{% else %}
+
+<!-- Symbol Cards -->
+{% for data in symbol_data %}
+<div class="bg-white shadow rounded-lg mb-6">
+    <!-- Symbol Header -->
+    <div class="px-6 py-4 border-b border-gray-200">
+        <div class="flex justify-between items-center">
+            <div>
+                <h3 class="text-2xl font-bold text-gray-900">
+                    {{ data.symbol.symbol }}
+                    <span class="text-base font-normal text-gray-500 ml-2">{{ data.symbol.name }}</span>
+                </h3>
+                <div class="flex gap-2 mt-1">
+                    <span class="text-xs text-gray-500">
+                        <i class="fas fa-clock mr-1"></i>{{ data.decision.timeframe.name }}
+                    </span>
+                    <span class="text-xs text-gray-500">
+                        <i class="fas fa-layer-group mr-1"></i>{{ data.decision.market_type.name }}
+                    </span>
+                    <span class="text-xs text-gray-500">
+                        <i class="fas fa-calendar mr-1"></i>{{ data.decision.created_at|date:"M d, Y H:i" }}
+                    </span>
+                </div>
+            </div>
+            <div class="text-right">
+                <div class="signal-{{ data.decision.signal }} px-4 py-2 rounded-lg text-sm font-bold">
+                    {{ data.decision.signal }}
+                </div>
+                <div class="mt-2 text-sm">
+                    <span class="bias-{{ data.decision.bias }} font-semibold">{{ data.decision.bias }}</span>
+                    <span class="text-gray-500 ml-2">{{ data.decision.confidence }}% confidence</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Indicators by Category -->
+    <div class="px-6 py-4">
+        {% for category, indicators in data.categories.items %}
+        <div class="mb-6" x-data="{ open: true }">
+            <div class="flex items-center justify-between mb-3 cursor-pointer" @click="open = !open">
+                <h4 class="text-lg font-semibold text-gray-900">
+                    <i class="fas fa-chart-line mr-2 text-indigo-600"></i>
+                    {{ category }}
+                    <span class="text-sm font-normal text-gray-500 ml-2">({{ indicators|length }} indicators)</span>
+                </h4>
+                <i class="fas transition-transform duration-200" :class="open ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+            </div>
+
+            <div x-show="open" x-collapse>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {% for indicator in indicators %}
+                    <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                        <!-- Indicator Header -->
+                        <div class="flex justify-between items-start mb-2">
+                            <div class="flex-1">
+                                <h5 class="font-semibold text-gray-900">{{ indicator.name }}</h5>
+                                <div class="flex items-center gap-2 mt-1">
+                                    {% if indicator.direction == 'BULLISH' %}
+                                    <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-semibold">
+                                        <i class="fas fa-arrow-up mr-1"></i>BULLISH
+                                    </span>
+                                    {% elif indicator.direction == 'BEARISH' %}
+                                    <span class="px-2 py-1 bg-red-100 text-red-800 rounded text-xs font-semibold">
+                                        <i class="fas fa-arrow-down mr-1"></i>BEARISH
+                                    </span>
+                                    {% else %}
+                                    <span class="px-2 py-1 bg-gray-100 text-gray-800 rounded text-xs font-semibold">
+                                        <i class="fas fa-minus mr-1"></i>NEUTRAL
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Indicator Value -->
+                        {% if indicator.value is not None %}
+                        <div class="mb-2">
+                            <span class="text-sm text-gray-500">Value:</span>
+                            <span class="text-lg font-mono font-bold text-gray-900 ml-1">{{ indicator.value|floatformat:4 }}</span>
+                        </div>
+                        {% endif %}
+
+                        <!-- Power/Contribution -->
+                        <div class="mb-2">
+                            <div class="flex justify-between items-center text-sm mb-1">
+                                <span class="text-gray-500">Power:</span>
+                                <span class="font-semibold {% if indicator.contribution > 0 %}text-green-600{% elif indicator.contribution < 0 %}text-red-600{% else %}text-gray-600{% endif %}">
+                                    {{ indicator.contribution|floatformat:3 }}
+                                </span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                {% widthratio indicator.power 2.0 100 as power_pct %}
+                                <div class="{% if indicator.contribution > 0 %}bg-green-500{% elif indicator.contribution < 0 %}bg-red-500{% else %}bg-gray-400{% endif %} h-2 rounded-full transition-all"
+                                     style="width: {{ power_pct|default:0 }}%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Explanation -->
+                        {% if indicator.explanation %}
+                        <div class="mt-2 pt-2 border-t border-gray-100">
+                            <p class="text-xs text-gray-600">{{ indicator.explanation|truncatewords:15 }}</p>
+                        </div>
+                        {% endif %}
+
+                        <!-- Metadata (optional) -->
+                        {% if indicator.metadata %}
+                        <div class="mt-2 pt-2 border-t border-gray-100">
+                            <div class="flex flex-wrap gap-1">
+                                {% for key, value in indicator.metadata.items %}
+                                {% if key != 'is_squeeze' and key != 'data_available' %}
+                                <span class="text-xs bg-gray-50 text-gray-600 px-2 py-1 rounded">
+                                    {{ key }}: {{ value|floatformat:2 }}
+                                </span>
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endfor %}
+
+{% endif %}
+{% endblock %}

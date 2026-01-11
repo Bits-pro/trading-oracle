@@ -898,3 +898,81 @@ def api_run_analysis(request):
     except Exception as e:
         logger.exception("Error running analysis")
         return JsonResponse({'error': str(e)}, status=500)
+
+
+def indicators_overview(request):
+    """
+    Show current indicator values and power for each symbol
+    Displays all features with their values, direction, and contribution
+    """
+    # Get filter parameters
+    symbol_filter = request.GET.get('symbol', '')
+    timeframe_filter = request.GET.get('timeframe', '1h')
+    market_type_filter = request.GET.get('market_type', 'SPOT')
+
+    # Get latest decisions for each symbol
+    symbols = Symbol.objects.filter(is_active=True)
+    if symbol_filter:
+        symbols = symbols.filter(symbol=symbol_filter)
+
+    symbol_data = []
+
+    for symbol in symbols:
+        # Get the most recent decision for this symbol
+        latest_decision = Decision.objects.filter(
+            symbol=symbol,
+            timeframe__name=timeframe_filter,
+            market_type__name=market_type_filter
+        ).select_related('timeframe', 'market_type').order_by('-created_at').first()
+
+        if not latest_decision:
+            continue
+
+        # Get all feature contributions for this decision
+        contributions = FeatureContribution.objects.filter(
+            decision=latest_decision
+        ).select_related('feature').order_by('-contribution')
+
+        # Organize by category
+        categories = {}
+        for contrib in contributions:
+            cat = contrib.feature.category
+            if cat not in categories:
+                categories[cat] = []
+
+            # Parse metadata
+            metadata = contrib.metadata or {}
+
+            categories[cat].append({
+                'name': contrib.feature.name,
+                'value': contrib.value,
+                'direction': 'BULLISH' if contrib.contribution > 0 else ('BEARISH' if contrib.contribution < 0 else 'NEUTRAL'),
+                'contribution': float(contrib.contribution),
+                'power': abs(float(contrib.contribution)),
+                'explanation': contrib.explanation,
+                'metadata': metadata
+            })
+
+        symbol_data.append({
+            'symbol': symbol,
+            'decision': latest_decision,
+            'categories': categories,
+            'total_contributions': len(contributions)
+        })
+
+    # Get available symbols, timeframes, market types for filters
+    all_symbols = Symbol.objects.filter(is_active=True).order_by('symbol')
+    all_timeframes = Timeframe.objects.all().order_by('name')
+    all_market_types = MarketType.objects.all().order_by('name')
+
+    context = {
+        'symbol_data': symbol_data,
+        'symbol_filter': symbol_filter,
+        'timeframe_filter': timeframe_filter,
+        'market_type_filter': market_type_filter,
+        'all_symbols': all_symbols,
+        'all_timeframes': all_timeframes,
+        'all_market_types': all_market_types,
+    }
+
+    return render(request, 'dashboard/indicators.html', context)

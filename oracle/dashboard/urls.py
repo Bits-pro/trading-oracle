@@ -9,6 +9,7 @@ app_name = 'dashboard'
 urlpatterns = [
     # Main dashboard pages
     path('', views.dashboard_home, name='home'),
+    path('indicators/', views.indicators_overview, name='indicators'),
     path('features/', views.feature_analysis, name='features'),
     path('history/', views.decision_history, name='history'),
     path('live/', views.live_monitor, name='live'),
