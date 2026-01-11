@@ -19,6 +19,7 @@ import numpy as np
 from decimal import Decimal
 
 from oracle.features.base import registry, FeatureResult
+from oracle.engine.consensus_engine import ConsensusEngine, ConsensusResult
 
 
 @dataclass
@@ -44,6 +45,9 @@ class DecisionOutput:
     top_drivers: List[Dict[str, Any]]  # Top 5 feature contributors
     raw_score: float
     regime_context: Dict[str, Any]
+
+    # Consensus analysis (new)
+    consensus: Optional[ConsensusResult]
 
     # All feature contributions
     all_features: List[FeatureResult]
@@ -453,6 +457,24 @@ class DecisionEngine:
         )
         signal, bias, confidence, regime_context = layer2.apply_rules(raw_score)
 
+        # Layer 2.5: Consensus analysis (NEW)
+        consensus_engine = ConsensusEngine()
+        consensus = consensus_engine.calculate_consensus(feature_results)
+
+        # Adjust confidence based on consensus
+        confidence_adjusted, consensus_explanation = consensus_engine.adjust_confidence_by_consensus(
+            base_confidence=confidence,
+            consensus=consensus
+        )
+        confidence = int(confidence_adjusted)
+
+        # Add consensus info to regime context
+        regime_context['consensus_percentage'] = consensus.consensus_percentage
+        regime_context['consensus_level'] = consensus.agreement_level
+        regime_context['consensus_explanation'] = consensus_explanation
+        if consensus.conflicts:
+            regime_context['consensus_conflicts'] = consensus.conflicts
+
         # Calculate trade parameters
         current_price = Decimal(str(df['close'].iloc[-1]))
         entry_price, stop_loss, take_profit, risk_reward = self._calculate_trade_params(
@@ -489,6 +511,7 @@ class DecisionEngine:
             top_drivers=top_drivers,
             raw_score=raw_score,
             regime_context=regime_context,
+            consensus=consensus,
             all_features=feature_results
         )
 

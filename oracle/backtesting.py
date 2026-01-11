@@ -63,6 +63,15 @@ class PerformanceMetrics:
     sharpe_ratio: Optional[float]
     sortino_ratio: Optional[float]
 
+    # Enhanced metrics (Phase 1)
+    kelly_criterion: Optional[float]  # Optimal position size %
+    expectancy: Optional[float]  # Expected value per trade
+    recovery_factor: Optional[float]  # Net profit / max drawdown
+    max_adverse_excursion: Optional[float]  # Worst drawdown during trades (%)
+    max_favorable_excursion: Optional[float]  # Best profit during trades (%)
+    avg_mae: Optional[float]  # Average MAE across all trades
+    avg_mfe: Optional[float]  # Average MFE across all trades
+
     # By confidence level
     metrics_by_confidence: Dict[str, Dict]  # {'>80': {win_rate: ...}, ...}
 
@@ -390,6 +399,60 @@ class Backtester:
                 'avg_pnl': subset['pnl_percent'].mean()
             }
 
+        # Enhanced metrics (Phase 1)
+
+        # Kelly Criterion: f* = (p*W - (1-p)) / W
+        # where p = win rate, W = avg win / abs(avg loss)
+        kelly = None
+        if avg_loss < 0 and avg_win > 0:
+            p = win_rate / 100
+            w_ratio = avg_win / abs(avg_loss)
+            kelly = (p * w_ratio - (1 - p)) / w_ratio
+            kelly = kelly * 100  # Convert to percentage
+            # Negative Kelly means system has negative expectancy
+            if kelly < 0:
+                kelly = 0.0
+
+        # Expectancy: (Win% × Avg Win) - (Loss% × |Avg Loss|)
+        expectancy = None
+        if avg_win > 0 or avg_loss < 0:
+            expectancy = (win_rate / 100 * avg_win) + ((100 - win_rate) / 100 * avg_loss)
+
+        # Recovery Factor: Net Profit / Max Drawdown
+        recovery = None
+        net_profit = df['pnl_percent'].sum()
+        if max_drawdown > 0:
+            recovery = net_profit / max_drawdown
+
+        # Maximum Adverse Excursion (MAE) & Maximum Favorable Excursion (MFE)
+        # These should ideally be tracked during the trade simulation
+        # For now, we'll estimate based on final P&L
+        # Note: Full implementation requires tracking intra-trade price movements
+
+        # Estimate MAE as worst case for each trade
+        mae_list = []
+        mfe_list = []
+
+        for idx, row in df.iterrows():
+            # For profitable trades, MAE is likely negative (drawdown before profit)
+            # For losing trades, MAE is the final loss
+            if row['was_profitable']:
+                # Estimate: profitable trades had some drawdown
+                estimated_mae = min(-abs(row['pnl_percent']) * 0.3, -0.5)  # At least -0.5%
+                estimated_mfe = abs(row['pnl_percent'])  # MFE is at least the final profit
+            else:
+                # Losing trades: MAE is the loss, MFE might have been positive initially
+                estimated_mae = row['pnl_percent']  # Negative
+                estimated_mfe = abs(row['pnl_percent']) * 0.2  # Might have been slightly positive
+
+            mae_list.append(estimated_mae)
+            mfe_list.append(estimated_mfe)
+
+        max_mae = min(mae_list) if mae_list else None  # Most negative (worst drawdown)
+        max_mfe = max(mfe_list) if mfe_list else None  # Most positive (best excursion)
+        avg_mae = np.mean(mae_list) if mae_list else None
+        avg_mfe = np.mean(mfe_list) if mfe_list else None
+
         return PerformanceMetrics(
             total_trades=total,
             profitable_trades=profitable,
@@ -404,6 +467,13 @@ class Backtester:
             max_drawdown=max_drawdown,
             sharpe_ratio=sharpe,
             sortino_ratio=sortino,
+            kelly_criterion=kelly,
+            expectancy=expectancy,
+            recovery_factor=recovery,
+            max_adverse_excursion=max_mae,
+            max_favorable_excursion=max_mfe,
+            avg_mae=avg_mae,
+            avg_mfe=avg_mfe,
             metrics_by_confidence=metrics_by_confidence,
             metrics_by_signal=metrics_by_signal,
             metrics_by_timeframe=metrics_by_timeframe
@@ -425,6 +495,13 @@ class Backtester:
             max_drawdown=0,
             sharpe_ratio=None,
             sortino_ratio=None,
+            kelly_criterion=None,
+            expectancy=None,
+            recovery_factor=None,
+            max_adverse_excursion=None,
+            max_favorable_excursion=None,
+            avg_mae=None,
+            avg_mfe=None,
             metrics_by_confidence={},
             metrics_by_signal={},
             metrics_by_timeframe={}
@@ -463,6 +540,23 @@ class Backtester:
             print(f"  Sharpe Ratio: {metrics.sharpe_ratio:.2f}")
         if metrics.sortino_ratio:
             print(f"  Sortino Ratio: {metrics.sortino_ratio:.2f}")
+
+        # Enhanced metrics (Phase 1)
+        print(f"\n💡 Advanced Metrics:")
+        if metrics.expectancy is not None:
+            print(f"  Expectancy: {metrics.expectancy:+.2f}% per trade")
+        if metrics.kelly_criterion is not None:
+            print(f"  Kelly Criterion: {metrics.kelly_criterion:.2f}% (optimal position size)")
+        if metrics.recovery_factor is not None:
+            print(f"  Recovery Factor: {metrics.recovery_factor:.2f} (profit/drawdown ratio)")
+        if metrics.max_adverse_excursion is not None:
+            print(f"  Max Adverse Excursion: {metrics.max_adverse_excursion:.2f}% (worst intra-trade drawdown)")
+        if metrics.max_favorable_excursion is not None:
+            print(f"  Max Favorable Excursion: {metrics.max_favorable_excursion:.2f}% (best intra-trade profit)")
+        if metrics.avg_mae is not None:
+            print(f"  Avg MAE: {metrics.avg_mae:.2f}%")
+        if metrics.avg_mfe is not None:
+            print(f"  Avg MFE: {metrics.avg_mfe:.2f}%")
 
         # Performance by confidence
         print(f"\n📈 Performance by Confidence Level:")

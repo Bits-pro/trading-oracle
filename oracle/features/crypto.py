@@ -357,6 +357,236 @@ class ExchangeFlowFeature(BaseFeature):
         )
 
 
+class OrderBookImbalanceFeature(BaseFeature):
+    """
+    Analyzes order book bid/ask imbalance for directional bias
+
+    Inspired by 3Commas' real-time order book analysis.
+    Tracks depth imbalance and spread to gauge immediate buying/selling pressure.
+    """
+    category = 'CRYPTO_DERIVATIVES'
+
+    def __init__(self, params: Optional[Dict] = None):
+        super().__init__(params)
+        self.depth_levels = params.get('depth_levels', 20) if params else 20
+
+    def calculate(self, df: pd.DataFrame, symbol: str, timeframe: str,
+                  market_type: str, context: Optional[Dict] = None) -> FeatureResult:
+        """
+        Calculate order book imbalance
+
+        Args:
+            context: Should contain 'orderbook' with bids/asks data
+                    context['orderbook'] = {
+                        'bids': [[price, volume], ...],
+                        'asks': [[price, volume], ...]
+                    }
+        """
+        # Check if orderbook data available
+        if not context or 'orderbook' not in context:
+            return FeatureResult(
+                name='OrderBookImbalance',
+                category=self.category,
+                raw_value=0.5,  # Neutral
+                direction=0,
+                strength=0.0,
+                explanation="Order book data not available",
+                metadata={'data_available': False}
+            )
+
+        orderbook = context['orderbook']
+        bids = orderbook.get('bids', [])
+        asks = orderbook.get('asks', [])
+
+        if not bids or not asks:
+            return FeatureResult(
+                name='OrderBookImbalance',
+                category=self.category,
+                raw_value=0.5,
+                direction=0,
+                strength=0.0,
+                explanation="Order book empty"
+            )
+
+        # Calculate bid/ask volume for top N levels
+        depth_to_check = min(self.depth_levels, len(bids), len(asks))
+
+        bid_volume = sum([float(bid[1]) for bid in bids[:depth_to_check]])
+        ask_volume = sum([float(ask[1]) for ask in asks[:depth_to_check]])
+
+        total_volume = bid_volume + ask_volume
+        if total_volume == 0:
+            bid_ratio = 0.5
+        else:
+            bid_ratio = bid_volume / total_volume
+
+        # Calculate spread
+        best_bid = float(bids[0][0]) if bids else 0
+        best_ask = float(asks[0][0]) if asks else 0
+
+        if best_bid > 0:
+            spread_pct = (best_ask - best_bid) / best_bid * 100
+        else:
+            spread_pct = 0
+
+        # Analyze imbalance
+        # bid_ratio > 0.6 = Strong buying pressure (bullish)
+        # bid_ratio < 0.4 = Strong selling pressure (bearish)
+        # Wide spread = Low liquidity / high volatility (caution)
+
+        if bid_ratio > 0.60:
+            # Strong buying pressure
+            direction = 1
+            strength = min(1.0, (bid_ratio - 0.5) / 0.3)  # Scale 0.5-0.8 to 0-1
+
+            if spread_pct > 0.1:  # Wide spread
+                strength *= 0.7  # Reduce strength if liquidity is low
+                explanation = f"Order book bullish: {bid_ratio:.1%} bids (⚠️ wide spread: {spread_pct:.3f}%)"
+            else:
+                explanation = f"Order book bullish: {bid_ratio:.1%} bids, tight spread ({spread_pct:.3f}%)"
+
+        elif bid_ratio < 0.40:
+            # Strong selling pressure
+            direction = -1
+            strength = min(1.0, (0.5 - bid_ratio) / 0.3)  # Scale 0.2-0.5 to 0-1
+
+            if spread_pct > 0.1:
+                strength *= 0.7
+                explanation = f"Order book bearish: {(1-bid_ratio):.1%} asks (⚠️ wide spread: {spread_pct:.3f}%)"
+            else:
+                explanation = f"Order book bearish: {(1-bid_ratio):.1%} asks, tight spread ({spread_pct:.3f}%)"
+
+        else:
+            # Balanced order book
+            direction = 0
+            strength = 0.0
+            explanation = f"Order book balanced: {bid_ratio:.1%} bids / {(1-bid_ratio):.1%} asks (spread: {spread_pct:.3f}%)"
+
+        # Additional penalty for very wide spreads (low liquidity)
+        if spread_pct > 0.5:
+            strength *= 0.5
+            explanation += " | Very low liquidity"
+
+        return FeatureResult(
+            name='OrderBookImbalance',
+            category=self.category,
+            raw_value=bid_ratio,
+            direction=direction,
+            strength=strength,
+            explanation=explanation,
+            metadata={
+                'bid_volume': bid_volume,
+                'ask_volume': ask_volume,
+                'bid_ratio': bid_ratio,
+                'spread_pct': spread_pct,
+                'depth_levels': depth_to_check,
+                'best_bid': best_bid,
+                'best_ask': best_ask
+            }
+        )
+
+
+class OrderBookWallFeature(BaseFeature):
+    """
+    Detects large buy/sell walls in the order book
+
+    Walls can act as support/resistance and indicate whale positioning.
+    """
+    category = 'CRYPTO_DERIVATIVES'
+
+    def __init__(self, params: Optional[Dict] = None):
+        super().__init__(params)
+        self.wall_threshold_multiplier = params.get('wall_threshold', 3.0) if params else 3.0
+
+    def calculate(self, df: pd.DataFrame, symbol: str, timeframe: str,
+                  market_type: str, context: Optional[Dict] = None) -> FeatureResult:
+        """
+        Detect buy/sell walls in order book
+
+        A "wall" is an order significantly larger than average depth at that level
+        """
+        if not context or 'orderbook' not in context:
+            return FeatureResult(
+                name='OrderBookWall',
+                category=self.category,
+                raw_value=0.0,
+                direction=0,
+                strength=0.0,
+                explanation="Order book data not available"
+            )
+
+        orderbook = context['orderbook']
+        bids = orderbook.get('bids', [])
+        asks = orderbook.get('asks', [])
+
+        if len(bids) < 20 or len(asks) < 20:
+            return FeatureResult(
+                name='OrderBookWall',
+                category=self.category,
+                raw_value=0.0,
+                direction=0,
+                strength=0.0,
+                explanation="Insufficient order book depth"
+            )
+
+        # Analyze top 20 levels
+        bid_volumes = [float(bid[1]) for bid in bids[:20]]
+        ask_volumes = [float(ask[1]) for ask in asks[:20]]
+
+        # Calculate average and identify walls
+        avg_bid_volume = np.mean(bid_volumes)
+        avg_ask_volume = np.mean(ask_volumes)
+
+        # Find largest orders
+        max_bid = max(bid_volumes)
+        max_ask = max(ask_volumes)
+
+        # Determine if there are walls
+        has_buy_wall = max_bid > (avg_bid_volume * self.wall_threshold_multiplier)
+        has_sell_wall = max_ask > (avg_ask_volume * self.wall_threshold_multiplier)
+
+        if has_buy_wall and not has_sell_wall:
+            # Buy wall without sell wall = Support / bullish
+            direction = 1
+            strength = min(1.0, max_bid / (avg_bid_volume * 5))
+            explanation = f"Large buy wall detected: {max_bid:.1f} ({max_bid/avg_bid_volume:.1f}x avg) - potential support"
+
+        elif has_sell_wall and not has_buy_wall:
+            # Sell wall without buy wall = Resistance / bearish
+            direction = -1
+            strength = min(1.0, max_ask / (avg_ask_volume * 5))
+            explanation = f"Large sell wall detected: {max_ask:.1f} ({max_ask/avg_ask_volume:.1f}x avg) - potential resistance"
+
+        elif has_buy_wall and has_sell_wall:
+            # Both walls = Range-bound / neutral
+            direction = 0
+            strength = 0.0
+            explanation = f"Buy & sell walls: range-bound between {max_bid:.1f} and {max_ask:.1f}"
+
+        else:
+            # No significant walls
+            direction = 0
+            strength = 0.0
+            explanation = "No significant order book walls detected"
+
+        return FeatureResult(
+            name='OrderBookWall',
+            category=self.category,
+            raw_value=max_bid - max_ask if has_buy_wall or has_sell_wall else 0.0,
+            direction=direction,
+            strength=strength,
+            explanation=explanation,
+            metadata={
+                'max_bid': max_bid,
+                'max_ask': max_ask,
+                'avg_bid': avg_bid_volume,
+                'avg_ask': avg_ask_volume,
+                'has_buy_wall': has_buy_wall,
+                'has_sell_wall': has_sell_wall
+            }
+        )
+
+
 # Register crypto features
 registry.register('FundingRate', FundingRateFeature)
 registry.register('OpenInterest', OpenInterestFeature)
@@ -364,3 +594,5 @@ registry.register('Basis', BasisFeature)
 registry.register('Liquidations', LiquidationsFeature)
 registry.register('OIVolumeRatio', OIVolumeRatioFeature)
 registry.register('ExchangeFlow', ExchangeFlowFeature)
+registry.register('OrderBookImbalance', OrderBookImbalanceFeature)
+registry.register('OrderBookWall', OrderBookWallFeature)
