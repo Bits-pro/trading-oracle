@@ -26,8 +26,21 @@ class DXYFeature(BaseFeature):
             )
 
         dxy_data = context['macro']['DXY']
+
+        # Check if dataframe has enough data
+        if dxy_data.empty or len(dxy_data) < 5:
+            return FeatureResult(
+                name='DXY',
+                category=self.category,
+                raw_value=0.0,
+                direction=0,
+                strength=0.0,
+                explanation="Insufficient DXY data"
+            )
+
         current_dxy = dxy_data['close'].iloc[-1]
-        dxy_change_pct = ((current_dxy - dxy_data['close'].iloc[-5]) / dxy_data['close'].iloc[-5]) * 100
+        lookback_idx = min(5, len(dxy_data) - 1)
+        dxy_change_pct = ((current_dxy - dxy_data['close'].iloc[-lookback_idx]) / dxy_data['close'].iloc[-lookback_idx]) * 100
 
         # Calculate DXY trend
         dxy_sma_20 = dxy_data['close'].rolling(20).mean().iloc[-1]
@@ -76,8 +89,21 @@ class VIXFeature(BaseFeature):
             )
 
         vix_data = context['macro']['VIX']
+
+        # Check if dataframe has enough data
+        if vix_data.empty or len(vix_data) < 5:
+            return FeatureResult(
+                name='VIX',
+                category=self.category,
+                raw_value=0.0,
+                direction=0,
+                strength=0.0,
+                explanation="Insufficient VIX data"
+            )
+
         current_vix = vix_data['close'].iloc[-1]
-        vix_change_pct = ((current_vix - vix_data['close'].iloc[-5]) / vix_data['close'].iloc[-5]) * 100
+        lookback_idx = min(5, len(vix_data) - 1)
+        vix_change_pct = ((current_vix - vix_data['close'].iloc[-lookback_idx]) / vix_data['close'].iloc[-lookback_idx]) * 100
 
         # VIX thresholds
         # < 15: low fear, bullish
@@ -446,12 +472,228 @@ class BTCDominanceFeature(BaseFeature):
         )
 
 
+class Treasury10YFeature(BaseFeature):
+    """10-Year Treasury Yield - key risk-free rate benchmark"""
+    category = 'MACRO'
+
+    def calculate(self, df: pd.DataFrame, symbol: str, timeframe: str,
+                  market_type: str, context: Optional[Dict] = None) -> FeatureResult:
+        if not context or 'macro' not in context or 'TNX' not in context['macro']:
+            return FeatureResult(
+                name='Treasury10Y',
+                category=self.category,
+                raw_value=0.0,
+                direction=0,
+                strength=0.0,
+                explanation="Treasury data not available"
+            )
+
+        tnx_data = context['macro']['TNX']
+
+        # Check if dataframe has enough data
+        if tnx_data.empty or len(tnx_data) < 5:
+            return FeatureResult(
+                name='Treasury10Y',
+                category=self.category,
+                raw_value=0.0,
+                direction=0,
+                strength=0.0,
+                explanation="Insufficient Treasury data"
+            )
+
+        current_yield = tnx_data['close'].iloc[-1]
+        lookback_idx = min(10, len(tnx_data) - 1)
+        prev_yield = tnx_data['close'].iloc[-lookback_idx]
+        yield_change = current_yield - prev_yield
+
+        # Rising yields = bearish for gold (opportunity cost)
+        # Falling yields = bullish for gold
+        if yield_change > 0.1:
+            direction = -1
+            strength = min(1.0, abs(yield_change) / 0.5)
+            explanation = f"10Y Treasury rising to {current_yield:.2f}% (+{yield_change:.2f}%) - bearish for gold"
+        elif yield_change < -0.1:
+            direction = 1
+            strength = min(1.0, abs(yield_change) / 0.5)
+            explanation = f"10Y Treasury falling to {current_yield:.2f}% ({yield_change:.2f}%) - bullish for gold"
+        else:
+            direction = 0
+            strength = 0.3
+            explanation = f"10Y Treasury stable at {current_yield:.2f}%"
+
+        return FeatureResult(
+            name='Treasury10Y',
+            category=self.category,
+            raw_value=float(current_yield),
+            direction=direction,
+            strength=strength,
+            explanation=explanation,
+            metadata={'change': float(yield_change)}
+        )
+
+
+class GoldOilRatioFeature(BaseFeature):
+    """Gold/Oil ratio - flight to safety indicator"""
+    category = 'INTERMARKET'
+
+    def calculate(self, df: pd.DataFrame, symbol: str, timeframe: str,
+                  market_type: str, context: Optional[Dict] = None) -> FeatureResult:
+        if not context or 'intermarket' not in context or 'CRUDE' not in context['intermarket']:
+            return FeatureResult(
+                name='GoldOilRatio',
+                category=self.category,
+                raw_value=0.0,
+                direction=0,
+                strength=0.0,
+                explanation="Oil data not available"
+            )
+
+        oil_data = context['intermarket']['CRUDE']
+
+        # Check if dataframe has enough data
+        if oil_data.empty or len(oil_data) < 5:
+            return FeatureResult(
+                name='GoldOilRatio',
+                category=self.category,
+                raw_value=0.0,
+                direction=0,
+                strength=0.0,
+                explanation="Insufficient oil data"
+            )
+
+        gold_price = df['close'].iloc[-1]
+        oil_price = oil_data['close'].iloc[-1]
+
+        ratio = gold_price / oil_price
+
+        # Get historical ratio for comparison
+        lookback_idx = min(20, len(oil_data) - 1)
+        gold_past = df['close'].iloc[-lookback_idx]
+        oil_past = oil_data['close'].iloc[-lookback_idx]
+        ratio_past = gold_past / oil_past
+
+        ratio_change_pct = ((ratio - ratio_past) / ratio_past) * 100
+
+        # Historical average: around 15-25
+        # Rising ratio = gold strength or oil weakness (risk-off, bullish for gold)
+        # Falling ratio = gold weakness or oil strength (risk-on, bearish for gold)
+
+        if ratio > 30:
+            direction = 1  # Extremely high ratio - gold very strong
+            strength = min(1.0, (ratio - 30) / 10)
+            explanation = f"Gold/Oil ratio high at {ratio:.1f} - strong safe haven demand"
+        elif ratio < 15:
+            direction = -1  # Low ratio - gold relatively weak
+            strength = min(1.0, (15 - ratio) / 5)
+            explanation = f"Gold/Oil ratio low at {ratio:.1f} - weak gold demand"
+        elif ratio_change_pct > 5:
+            direction = 1
+            strength = min(1.0, ratio_change_pct / 10)
+            explanation = f"Gold/Oil ratio rising ({ratio:.1f}, +{ratio_change_pct:.1f}%) - risk-off"
+        elif ratio_change_pct < -5:
+            direction = -1
+            strength = min(1.0, abs(ratio_change_pct) / 10)
+            explanation = f"Gold/Oil ratio falling ({ratio:.1f}, {ratio_change_pct:.1f}%) - risk-on"
+        else:
+            direction = 0
+            strength = 0.2
+            explanation = f"Gold/Oil ratio normal at {ratio:.1f}"
+
+        return FeatureResult(
+            name='GoldOilRatio',
+            category=self.category,
+            raw_value=float(ratio),
+            direction=direction,
+            strength=strength,
+            explanation=explanation,
+            metadata={'change_pct': float(ratio_change_pct)}
+        )
+
+
+class InflationExpectationsFeature(BaseFeature):
+    """Inflation expectations - derived from Treasury yields and TIPS"""
+    category = 'MACRO'
+
+    def calculate(self, df: pd.DataFrame, symbol: str, timeframe: str,
+                  market_type: str, context: Optional[Dict] = None) -> FeatureResult:
+        if not context or 'macro' not in context:
+            return FeatureResult(
+                name='InflationExpectations',
+                category=self.category,
+                raw_value=0.0,
+                direction=0,
+                strength=0.0,
+                explanation="Macro data not available"
+            )
+
+        # Calculate breakeven inflation from TNX and TIP
+        if 'TNX' not in context['macro'] or 'TIP' not in context['macro']:
+            return FeatureResult(
+                name='InflationExpectations',
+                category=self.category,
+                raw_value=0.0,
+                direction=0,
+                strength=0.0,
+                explanation="Treasury/TIPS data not available"
+            )
+
+        tnx_data = context['macro']['TNX']
+        tip_data = context['macro']['TIP']
+
+        if tnx_data.empty or tip_data.empty or len(tnx_data) < 10 or len(tip_data) < 10:
+            return FeatureResult(
+                name='InflationExpectations',
+                category=self.category,
+                raw_value=0.0,
+                direction=0,
+                strength=0.0,
+                explanation="Insufficient data for inflation expectations"
+            )
+
+        # Approximate inflation expectations
+        # (This is simplified - real implementation would use actual TIPS yield)
+        nominal_yield = tnx_data['close'].iloc[-1]
+
+        # TIP ETF price movement as proxy for real yields direction
+        tip_price_change = ((tip_data['close'].iloc[-1] - tip_data['close'].iloc[-10]) /
+                           tip_data['close'].iloc[-10]) * 100
+
+        # Rising TIP price = falling real yields = bullish for gold
+        # Also consider if inflation expectations are rising
+
+        if tip_price_change > 0.5:
+            direction = 1  # Falling real yields / rising inflation expectations
+            strength = min(1.0, abs(tip_price_change) / 2)
+            explanation = f"Inflation expectations rising - bullish for gold"
+        elif tip_price_change < -0.5:
+            direction = -1  # Rising real yields / falling inflation expectations
+            strength = min(1.0, abs(tip_price_change) / 2)
+            explanation = f"Inflation expectations falling - bearish for gold"
+        else:
+            direction = 0
+            strength = 0.3
+            explanation = f"Inflation expectations stable"
+
+        return FeatureResult(
+            name='InflationExpectations',
+            category=self.category,
+            raw_value=float(nominal_yield),
+            direction=direction,
+            strength=strength,
+            explanation=explanation,
+            metadata={'tip_price_change': float(tip_price_change)}
+        )
+
+
 # Register macro and intermarket features
 registry.register('DXY', DXYFeature)
 registry.register('VIX', VIXFeature)
 registry.register('RealYields', RealYieldsFeature)
+registry.register('Treasury10Y', Treasury10YFeature)
+registry.register('InflationExpectations', InflationExpectationsFeature)
 registry.register('GoldSilverRatio', GoldSilverRatioFeature)
 registry.register('CopperGoldRatio', CopperGoldRatioFeature)
+registry.register('GoldOilRatio', GoldOilRatioFeature)
 registry.register('MinersGoldRatio', MinersGoldRatioFeature)
 registry.register('GLDFlow', GLDFlowFeature)
 registry.register('BTCDominance', BTCDominanceFeature)

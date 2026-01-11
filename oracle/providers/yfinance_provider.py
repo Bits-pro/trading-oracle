@@ -256,24 +256,45 @@ class MacroDataProvider(YFinanceProvider):
 
     def fetch_all_macro_indicators(self) -> Dict[str, pd.DataFrame]:
         """
-        Fetch all macro indicators at once
+        Fetch all macro indicators at once with retry logic
 
         Returns:
             Dict of {indicator_name: DataFrame}
         """
+        import time
         indicators = {}
 
         macro_symbols = ['DXY', 'VIX', 'TNX', 'TIP', 'SPX']
 
         for symbol in macro_symbols:
-            try:
-                df = self.fetch_ohlcv(
-                    symbol=symbol,
-                    timeframe='1d',
-                    limit=100
-                )
-                indicators[symbol] = df
-            except Exception as e:
-                print(f"Error fetching {symbol}: {e}")
+            # Try up to 3 times with exponential backoff
+            max_retries = 3
+            for attempt in range(max_retries):
+                try:
+                    df = self.fetch_ohlcv(
+                        symbol=symbol,
+                        timeframe='1d',
+                        limit=100
+                    )
+
+                    if not df.empty:
+                        indicators[symbol] = df
+                        print(f"✓ Fetched {symbol}: {len(df)} rows")
+                        break
+                    else:
+                        print(f"⚠ {symbol}: Empty data (attempt {attempt + 1}/{max_retries})")
+
+                except Exception as e:
+                    print(f"✗ Error fetching {symbol} (attempt {attempt + 1}/{max_retries}): {e}")
+
+                # Wait before retry (exponential backoff)
+                if attempt < max_retries - 1:
+                    wait_time = 2 ** attempt  # 1s, 2s, 4s
+                    time.sleep(wait_time)
+
+            # If all retries failed, add empty dataframe
+            if symbol not in indicators:
+                print(f"⚠ {symbol}: All retries failed, using empty data")
+                indicators[symbol] = pd.DataFrame(columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
 
         return indicators

@@ -81,10 +81,13 @@
                             Feature
                         </th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Latest Value
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Power
                         </th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Effect
+                            Effect / Influence
                         </th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Contribution
@@ -110,6 +113,22 @@
                             </div>
                         </td>
 
+                        <!-- Latest Value -->
+                        <td class="px-6 py-4">
+                            {% if stat.latest_value is not None %}
+                                <div class="text-sm font-mono text-gray-900">
+                                    {{ stat.latest_value|floatformat:4 }}
+                                </div>
+                                {% if stat.latest_explanation %}
+                                <div class="text-xs text-gray-500 max-w-xs">
+                                    {{ stat.latest_explanation|truncatewords:8 }}
+                                </div>
+                                {% endif %}
+                            {% else %}
+                                <span class="text-xs text-gray-400">N/A</span>
+                            {% endif %}
+                        </td>
+
                         <!-- Power -->
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center">
@@ -128,13 +147,27 @@
                             </div>
                         </td>
 
-                        <!-- Effect -->
+                        <!-- Effect / Influence -->
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="effect-{{ stat.effect }} px-3 py-1 rounded-full text-xs font-semibold border">
-                                {{ stat.effect }}
-                            </span>
+                            <div class="flex items-center space-x-2">
+                                <span class="effect-{{ stat.effect }} px-3 py-1 rounded-full text-xs font-semibold border">
+                                    {{ stat.effect }}
+                                </span>
+                                {% if stat.effect == 'BULLISH' %}
+                                <i class="fas fa-arrow-up text-green-600" title="Positive influence for BUY"></i>
+                                {% elif stat.effect == 'BEARISH' %}
+                                <i class="fas fa-arrow-down text-red-600" title="Negative influence for SELL"></i>
+                                {% else %}
+                                <i class="fas fa-minus text-gray-400" title="Neutral influence"></i>
+                                {% endif %}
+                            </div>
                             <div class="text-xs text-gray-500 mt-1">
                                 {{ stat.effect_strength|floatformat:0 }}% dominance
+                                {% if stat.effect == 'BULLISH' %}
+                                <span class="text-green-600">(+buy signal)</span>
+                                {% elif stat.effect == 'BEARISH' %}
+                                <span class="text-red-600">(-sell signal)</span>
+                                {% endif %}
                             </div>
                         </td>
 

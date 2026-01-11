@@ -6,6 +6,7 @@ from django.utils import timezone
 from oracle.models import Symbol, MarketType, Timeframe, Decision
 from oracle.engine import DecisionEngine
 from oracle.providers import BinanceProvider, YFinanceProvider, MacroDataProvider
+from oracle.providers.news_provider import NewsSentimentProvider
 import uuid
 
 
@@ -67,6 +68,7 @@ class Command(BaseCommand):
         crypto_provider = BinanceProvider()
         traditional_provider = YFinanceProvider()
         macro_provider = MacroDataProvider()
+        news_provider = NewsSentimentProvider()
 
         # Fetch macro data
         self.stdout.write('Fetching macro data...')
@@ -76,6 +78,31 @@ class Command(BaseCommand):
         except Exception as e:
             self.stdout.write(self.style.WARNING(f'  ! Error fetching macro data: {e}'))
             macro_context = {}
+
+        # Fetch intermarket data
+        self.stdout.write('Fetching intermarket data...')
+        intermarket_context = {}
+        intermarket_symbols = ['XAGUSD', 'COPPER', 'CRUDE', 'GLD', 'GDX']
+        for sym in intermarket_symbols:
+            try:
+                df = traditional_provider.fetch_ohlcv(symbol=sym, timeframe='1d', limit=100)
+                if not df.empty:
+                    intermarket_context[sym] = df
+                    self.stdout.write(f'  ✓ Fetched {sym}: {len(df)} rows')
+            except Exception as e:
+                self.stdout.write(self.style.WARNING(f'  ! Error fetching {sym}: {e}'))
+
+        # Fetch news sentiment
+        self.stdout.write('Fetching news sentiment...')
+        try:
+            sentiment_data = news_provider.fetch_sentiment(lookback_hours=24)
+            self.stdout.write(self.style.SUCCESS(
+                f'  ✓ News sentiment: fear_index={sentiment_data["fear_index"]:.3f}, '
+                f'articles={sentiment_data["count"]}'
+            ))
+        except Exception as e:
+            self.stdout.write(self.style.WARNING(f'  ! Error fetching news sentiment: {e}'))
+            sentiment_data = {'fear_index': 0.0, 'count': 0, 'urgency': 0.0}
 
         decisions_created = 0
         errors = []
@@ -113,7 +140,11 @@ class Command(BaseCommand):
                         self.stdout.write(f'    → Fetched {len(df)} candles')
 
                         # Build context
-                        context = {'macro': macro_context}
+                        context = {
+                            'macro': macro_context,
+                            'intermarket': intermarket_context,
+                            'sentiment': sentiment_data
+                        }
 
                         # Add derivatives data if applicable
                         if market_type.name in ['PERPETUAL', 'FUTURES'] and symbol.asset_type == 'CRYPTO':

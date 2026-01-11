@@ -4,9 +4,20 @@
 
 {% block content %}
 <!-- Page Header -->
-<div class="mb-6">
-    <h2 class="text-3xl font-bold text-gray-900">Dashboard Overview</h2>
-    <p class="mt-1 text-sm text-gray-600">Real-time system performance and statistics</p>
+<div class="mb-6 flex justify-between items-center">
+    <div>
+        <h2 class="text-3xl font-bold text-gray-900">Dashboard Overview</h2>
+        <p class="mt-1 text-sm text-gray-600">Real-time system performance and statistics</p>
+    </div>
+    <div>
+        <button
+            id="run-analysis-btn"
+            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        >
+            <i class="fas fa-play mr-2"></i>
+            Run Analysis
+        </button>
+    </div>
 </div>
 
 <!-- Key Metrics Cards -->
@@ -379,5 +390,52 @@
                 }
             });
         });
+
+    // Run Analysis Button Handler
+    document.getElementById('run-analysis-btn').addEventListener('click', async function() {
+        const button = this;
+        const originalText = button.innerHTML;
+
+        // Disable button and show loading state
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Running Analysis...';
+
+        try {
+            // Get CSRF token
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}';
+
+            const response = await fetch('{% url "dashboard:api_run_analysis" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrfToken
+                },
+                body: new URLSearchParams({
+                    'symbols[]': ['BTCUSDT', 'XAUUSD'],
+                    'timeframes[]': ['1h', '4h', '1d'],
+                    'market_types[]': ['SPOT']
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Show success message
+                alert(`Analysis complete!\nDecisions created: ${data.decisions_created}\nErrors: ${data.errors.length}`);
+
+                // Reload page to show new data
+                location.reload();
+            } else {
+                alert(`Error: ${data.error || 'Unknown error'}`);
+            }
+        } catch (error) {
+            console.error('Error running analysis:', error);
+            alert(`Error running analysis: ${error.message}`);
+        } finally {
+            // Re-enable button
+            button.disabled = false;
+            button.innerHTML = originalText;
+        }
+    });
 </script>
 {% endblock %}
