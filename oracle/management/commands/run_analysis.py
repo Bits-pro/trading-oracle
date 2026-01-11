@@ -10,6 +10,21 @@ from oracle.providers.news_provider import NewsSentimentProvider
 import uuid
 
 
+def sanitize_for_json(data):
+    """
+    Recursively convert all boolean values to strings for JSON serialization
+    Django JSONField cannot serialize Python bool objects
+    """
+    if isinstance(data, bool):
+        return 'YES' if data else 'NO'
+    elif isinstance(data, dict):
+        return {key: sanitize_for_json(value) for key, value in data.items()}
+    elif isinstance(data, list):
+        return [sanitize_for_json(item) for item in data]
+    else:
+        return data
+
+
 class Command(BaseCommand):
     help = 'Run trading analysis for specified symbols'
 
@@ -200,7 +215,7 @@ class Command(BaseCommand):
 
                         decision_output = engine.generate_decision(df, context)
 
-                        # Save decision
+                        # Save decision (sanitize all JSON fields to convert bools to strings)
                         decision = Decision.objects.create(
                             symbol=symbol,
                             market_type=market_type,
@@ -212,10 +227,10 @@ class Command(BaseCommand):
                             stop_loss=decision_output.stop_loss,
                             take_profit=decision_output.take_profit,
                             risk_reward=decision_output.risk_reward,
-                            invalidation_conditions=decision_output.invalidation_conditions,
-                            top_drivers=[d for d in decision_output.top_drivers],
+                            invalidation_conditions=sanitize_for_json(decision_output.invalidation_conditions),
+                            top_drivers=sanitize_for_json([d for d in decision_output.top_drivers]),
                             raw_score=decision_output.raw_score,
-                            regime_context=decision_output.regime_context
+                            regime_context=sanitize_for_json(decision_output.regime_context)
                         )
 
                         decisions_created += 1
