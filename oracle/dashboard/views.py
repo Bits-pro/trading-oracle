@@ -879,7 +879,25 @@ def api_run_analysis(request):
 
                         decision_output = engine.generate_decision(df, context)
 
-                        # Save decision (sanitize all JSON fields to convert bools to strings)
+                        # Prepare sanitized data
+                        sanitized_invalidation = sanitize_for_json(decision_output.invalidation_conditions)
+                        sanitized_top_drivers = sanitize_for_json([d for d in decision_output.top_drivers])
+                        sanitized_regime = sanitize_for_json(decision_output.regime_context)
+
+                        # Debug: Check for any remaining booleans
+                        import json as json_lib
+                        try:
+                            json_lib.dumps(sanitized_invalidation)
+                            json_lib.dumps(sanitized_top_drivers)
+                            json_lib.dumps(sanitized_regime)
+                        except TypeError as je:
+                            logger.error(f"JSON serialization test failed: {je}")
+                            logger.error(f"invalidation: {sanitized_invalidation}")
+                            logger.error(f"top_drivers: {sanitized_top_drivers}")
+                            logger.error(f"regime: {sanitized_regime}")
+                            raise
+
+                        # Save decision (using pre-sanitized data)
                         decision = Decision.objects.create(
                             symbol=symbol,
                             market_type=market_type,
@@ -891,17 +909,17 @@ def api_run_analysis(request):
                             stop_loss=decision_output.stop_loss,
                             take_profit=decision_output.take_profit,
                             risk_reward=decision_output.risk_reward,
-                            invalidation_conditions=sanitize_for_json(decision_output.invalidation_conditions),
-                            top_drivers=sanitize_for_json([d for d in decision_output.top_drivers]),
+                            invalidation_conditions=sanitized_invalidation,
+                            top_drivers=sanitized_top_drivers,
                             raw_score=decision_output.raw_score,
-                            regime_context=sanitize_for_json(decision_output.regime_context)
+                            regime_context=sanitized_regime
                         )
 
                         decisions_created += 1
 
                     except Exception as e:
                         error_msg = f'Error analyzing {symbol.symbol} {market_type.name} {timeframe.name}: {str(e)}'
-                        logger.error(error_msg)
+                        logger.exception(f"Full traceback for {symbol.symbol} {market_type.name} {timeframe.name}")
                         errors.append(error_msg)
 
         return JsonResponse({
