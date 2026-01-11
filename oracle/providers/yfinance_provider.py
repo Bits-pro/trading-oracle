@@ -273,22 +273,6 @@ class MacroDataProvider(YFinanceProvider):
         macro_symbols = ['DXY', 'VIX', 'TNX', 'TIP', 'SPX']
 
         for symbol in macro_symbols:
-# <<<<<<< HEAD
-#             try:
-#                 df = self.fetch_ohlcv(
-#                     symbol=symbol,
-#                     timeframe='1d',
-#                     limit=100
-#                 )
-#                 if df.empty:
-#                     if log_empty:
-#                         self.logger.warning("Macro indicator %s returned no data.", symbol)
-#                     continue
-#                 indicators[symbol] = df
-#             except Exception as e:
-#                 if log_empty:
-#                     self.logger.warning("Error fetching macro indicator %s: %s", symbol, e)
-# =======
             # Try up to 3 times with exponential backoff
             max_retries = 3
             for attempt in range(max_retries):
@@ -301,13 +285,16 @@ class MacroDataProvider(YFinanceProvider):
 
                     if not df.empty:
                         indicators[symbol] = df
-                        print(f"✓ Fetched {symbol}: {len(df)} rows")
+                        if log_empty:
+                            self.logger.info("Fetched %s: %d rows", symbol, len(df))
                         break
                     else:
-                        print(f"⚠ {symbol}: Empty data (attempt {attempt + 1}/{max_retries})")
+                        if log_empty:
+                            self.logger.warning("%s: Empty data (attempt %d/%d)", symbol, attempt + 1, max_retries)
 
                 except Exception as e:
-                    print(f"✗ Error fetching {symbol} (attempt {attempt + 1}/{max_retries}): {e}")
+                    if log_empty:
+                        self.logger.warning("Error fetching %s (attempt %d/%d): %s", symbol, attempt + 1, max_retries, e)
 
                 # Wait before retry (exponential backoff)
                 if attempt < max_retries - 1:
@@ -316,8 +303,8 @@ class MacroDataProvider(YFinanceProvider):
 
             # If all retries failed, add empty dataframe
             if symbol not in indicators:
-                print(f"⚠ {symbol}: All retries failed, using empty data")
+                if log_empty:
+                    self.logger.warning("%s: All retries failed, using empty data", symbol)
                 indicators[symbol] = pd.DataFrame(columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
-# >>>>>>> remotes/origin/claude/django-trading-oracle-app-3dgc7
 
         return indicators

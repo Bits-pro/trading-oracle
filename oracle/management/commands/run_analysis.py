@@ -164,6 +164,14 @@ class Command(BaseCommand):
                 provider = traditional_provider
                 provider_symbol = symbol.symbol
 
+            # Track if we should try fallback provider for gold
+            fallback_provider = None
+            fallback_symbol = None
+            if symbol.asset_type == 'GOLD' and symbol.symbol == 'XAUUSD':
+                # If YFinance fails for gold, we'll fallback to Binance PAXG/USDT
+                fallback_provider = crypto_provider
+                fallback_symbol = 'PAXG/USDT'
+
             for market_type in market_types:
                 for timeframe in timeframes:
                     try:
@@ -175,6 +183,26 @@ class Command(BaseCommand):
                             timeframe=timeframe.name,
                             limit=500
                         )
+
+                        # Try fallback provider if primary fails for gold
+                        if df.empty and fallback_provider and fallback_symbol:
+                            self.stdout.write(self.style.WARNING(
+                                f'    ⚠ YFinance failed, trying Binance PAXG/USDT as fallback...'
+                            ))
+                            try:
+                                df = fallback_provider.fetch_ohlcv(
+                                    symbol=fallback_symbol,
+                                    timeframe=timeframe.name,
+                                    limit=500
+                                )
+                                if not df.empty:
+                                    self.stdout.write(self.style.SUCCESS(
+                                        f'    ✓ Fallback successful! Using PAXG/USDT data'
+                                    ))
+                            except Exception as fallback_error:
+                                self.stdout.write(self.style.WARNING(
+                                    f'    ⚠ Fallback also failed: {fallback_error}'
+                                ))
 
                         if df.empty:
                             self.stdout.write(self.style.WARNING(f'    ⚠ No data available'))

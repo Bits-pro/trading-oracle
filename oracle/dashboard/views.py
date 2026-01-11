@@ -834,6 +834,14 @@ def api_run_analysis(request):
                 provider = traditional_provider
                 provider_symbol = symbol.symbol
 
+            # Track if we should try fallback provider for gold
+            fallback_provider = None
+            fallback_symbol = None
+            if symbol.asset_type == 'GOLD' and symbol.symbol == 'XAUUSD':
+                # If YFinance fails for gold, we'll fallback to Binance PAXG/USDT
+                fallback_provider = crypto_provider
+                fallback_symbol = 'PAXG/USDT'
+
             for market_type in market_type_objects:
                 for timeframe in timeframe_objects:
                     try:
@@ -843,6 +851,20 @@ def api_run_analysis(request):
                             timeframe=timeframe.name,
                             limit=500
                         )
+
+                        # Try fallback provider if primary fails for gold
+                        if df.empty and fallback_provider and fallback_symbol:
+                            logger.info(f"YFinance failed for {symbol.symbol}, trying Binance {fallback_symbol} as fallback...")
+                            try:
+                                df = fallback_provider.fetch_ohlcv(
+                                    symbol=fallback_symbol,
+                                    timeframe=timeframe.name,
+                                    limit=500
+                                )
+                                if not df.empty:
+                                    logger.info(f"Fallback successful! Using {fallback_symbol} data for {symbol.symbol}")
+                            except Exception as fallback_error:
+                                logger.warning(f"Fallback also failed: {fallback_error}")
 
                         if df.empty:
                             continue
