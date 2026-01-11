@@ -12,11 +12,17 @@ import uuid
 
 def sanitize_for_json(data):
     """
-    Recursively convert all boolean values to strings for JSON serialization
-    Django JSONField cannot serialize Python bool objects
+    Recursively convert all boolean and numpy values to JSON-serializable types
+    Django JSONField cannot serialize Python bool objects or numpy types
     """
-    if isinstance(data, bool):
+    import numpy as np
+
+    # Handle numpy boolean types (np.bool_, np.True_, np.False_)
+    if isinstance(data, (bool, np.bool_)):
         return 'YES' if data else 'NO'
+    # Handle numpy numeric types (np.int64, np.float64, etc.)
+    elif isinstance(data, (np.integer, np.floating)):
+        return float(data)
     elif isinstance(data, dict):
         return {key: sanitize_for_json(value) for key, value in data.items()}
     elif isinstance(data, list):
