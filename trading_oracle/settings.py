@@ -46,6 +46,7 @@ INSTALLED_APPS = [
 
     # Project apps
     'oracle',
+    'oracle.dashboard',  # Dashboard UI
 ]
 
 MIDDLEWARE = [
