@@ -6,9 +6,7 @@ import django.db.models.deletion
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('oracle', '0001_initial'),  # Assumes initial migration exists or will be created
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
