@@ -5,6 +5,7 @@ Gold (XAUUSD), stocks, indices, ETFs, bonds, etc.
 import yfinance as yf
 import logging
 import pandas as pd
+import time
 from typing import Dict, List, Optional
 from datetime import datetime, timedelta
 from .base_provider import BaseProvider

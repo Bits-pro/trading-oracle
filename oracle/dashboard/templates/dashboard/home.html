@@ -470,17 +470,19 @@
             // Get CSRF token
             const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}';
 
+            // Build form data properly for arrays
+            const formData = new URLSearchParams();
+            ['BTCUSDT', 'XAUUSD'].forEach(s => formData.append('symbols[]', s));
+            ['1h', '4h', '1d'].forEach(t => formData.append('timeframes[]', t));
+            ['SPOT'].forEach(m => formData.append('market_types[]', m));
+
             const response = await fetch('{% url "dashboard:api_run_analysis" %}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                     'X-CSRFToken': csrfToken
                 },
-                body: new URLSearchParams({
-                    'symbols[]': ['BTCUSDT', 'XAUUSD'],
-                    'timeframes[]': ['1h', '4h', '1d'],
-                    'market_types[]': ['SPOT']
-                })
+                body: formData
             });
 
             const data = await response.json();

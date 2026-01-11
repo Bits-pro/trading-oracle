@@ -305,7 +305,7 @@ class Layer2Rules:
                 self.regime_context['volatility'] = 'NORMAL'
 
         if bbwidth_result and bbwidth_result.metadata.get('is_squeeze'):
-            self.regime_context['squeeze'] = True
+            self.regime_context['squeeze'] = 'YES'
 
     def _apply_filters(self, raw_score: float) -> float:
         """Apply regime-based filters"""
@@ -358,7 +358,7 @@ class Layer2Rules:
                    (adjusted_score < 0 and funding_contrib > 0.5):
                     # This is actually confirmation (contrarian signal)
                     adjusted_score *= 1.2
-                    self.regime_context['funding_confirmation'] = True
+                    self.regime_context['funding_confirmation'] = 'YES'
 
         return adjusted_score
 
