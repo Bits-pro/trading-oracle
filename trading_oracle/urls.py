@@ -15,8 +15,13 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
+from django.views.generic import RedirectView
 
 urlpatterns = [
+    path('', RedirectView.as_view(url='/dashboard/', permanent=False)),  # Redirect root to dashboard
     path('admin/', admin.site.urls),
+    path('api/', include('oracle.api.urls')),
+    path('api-auth/', include('rest_framework.urls')),  # DRF login/logout
+    path('dashboard/', include('oracle.dashboard.urls')),  # Dashboard UI
 ]

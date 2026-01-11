@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-gray-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Trading Oracle Dashboard{% endblock %}</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <!-- Alpine.js for interactivity -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* Custom styles */
+        .signal-STRONG_BUY { @apply bg-green-600 text-white; }
+        .signal-BUY { @apply bg-green-500 text-white; }
+        .signal-WEAK_BUY { @apply bg-green-400 text-gray-800; }
+        .signal-NEUTRAL { @apply bg-gray-400 text-gray-800; }
+        .signal-WEAK_SELL { @apply bg-red-400 text-gray-800; }
+        .signal-SELL { @apply bg-red-500 text-white; }
+        .signal-STRONG_SELL { @apply bg-red-600 text-white; }
+
+        .bias-BULLISH { @apply text-green-600; }
+        .bias-BEARISH { @apply text-red-600; }
+        .bias-NEUTRAL { @apply text-gray-600; }
+
+        .effect-BULLISH { @apply bg-green-100 text-green-800 border-green-300; }
+        .effect-BEARISH { @apply bg-red-100 text-red-800 border-red-300; }
+        .effect-NEUTRAL { @apply bg-gray-100 text-gray-800 border-gray-300; }
+
+        .consensus-STRONG_CONSENSUS { @apply bg-green-100 text-green-800; }
+        .consensus-MODERATE_CONSENSUS { @apply bg-blue-100 text-blue-800; }
+        .consensus-WEAK_CONSENSUS { @apply bg-yellow-100 text-yellow-800; }
+        .consensus-NO_CONSENSUS { @apply bg-red-100 text-red-800; }
+    </style>
+</head>
+<body class="h-full">
+    <div class="min-h-full">
+        <!-- Navigation -->
+        <nav class="bg-gradient-to-r from-indigo-600 to-purple-600 shadow-lg">
+            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <div class="flex h-16 items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <h1 class="text-2xl font-bold text-white">
+                                <i class="fas fa-chart-line mr-2"></i>
+                                Trading Oracle
+                            </h1>
+                        </div>
+                        <div class="hidden md:block">
+                            <div class="ml-10 flex items-baseline space-x-4">
+                                <a href="{% url 'dashboard:home' %}"
+                                   class="{% if request.resolver_match.url_name == 'home' %}bg-indigo-700{% else %}hover:bg-indigo-500{% endif %} text-white px-3 py-2 rounded-md text-sm font-medium">
+                                    <i class="fas fa-home mr-1"></i> Overview
+                                </a>
+                                <a href="{% url 'dashboard:features' %}"
+                                   class="{% if request.resolver_match.url_name == 'features' %}bg-indigo-700{% else %}hover:bg-indigo-500{% endif %} text-white px-3 py-2 rounded-md text-sm font-medium">
+                                    <i class="fas fa-chart-bar mr-1"></i> Features
+                                </a>
+                                <a href="{% url 'dashboard:history' %}"
+                                   class="{% if request.resolver_match.url_name == 'history' %}bg-indigo-700{% else %}hover:bg-indigo-500{% endif %} text-white px-3 py-2 rounded-md text-sm font-medium">
+                                    <i class="fas fa-history mr-1"></i> History
+                                </a>
+                                <a href="{% url 'dashboard:live' %}"
+                                   class="{% if request.resolver_match.url_name == 'live' %}bg-indigo-700{% else %}hover:bg-indigo-500{% endif %} text-white px-3 py-2 rounded-md text-sm font-medium">
+                                    <i class="fas fa-broadcast-tower mr-1"></i> Live
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="text-white text-sm mr-4">
+                            <i class="fas fa-clock mr-1"></i>
+                            <span id="current-time"></span>
+                        </span>
+                        <div class="relative" x-data="{ open: false }">
+                            <button @click="open = !open" class="bg-indigo-700 p-2 rounded-full text-white hover:bg-indigo-800">
+                                <i class="fas fa-cog"></i>
+                            </button>
+                            <div x-show="open" @click.away="open = false"
+                                 class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10"
+                                 style="display: none;">
+                                <a href="/admin/" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <i class="fas fa-user-shield mr-2"></i> Admin Panel
+                                </a>
+                                <a href="/api/" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <i class="fas fa-code mr-2"></i> API Docs
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="py-6">
+            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                {% block content %}
+                {% endblock %}
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-white border-t border-gray-200 mt-12">
+            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
+                <p class="text-center text-sm text-gray-500">
+                    Trading Oracle &copy; 2026 |
+                    Powered by Django 5.2.10 |
+                    <a href="https://github.com/anthropics/claude-code" class="text-indigo-600 hover:text-indigo-800">Built with Claude Code</a>
+                </p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Global Scripts -->
+    <script>
+        // Update current time
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('current-time').textContent = now.toLocaleString();
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        // Global chart configuration
+        Chart.defaults.font.family = "'Inter', sans-serif";
+        Chart.defaults.color = '#374151';
+
+        // Utility functions
+        function formatNumber(num, decimals = 2) {
+            return Number(num).toFixed(decimals);
+        }
+
+        function formatPercent(num) {
+            return formatNumber(num, 2) + '%';
+        }
+
+        function getSignalColor(signal) {
+            const colors = {
+                'STRONG_BUY': '#16a34a',
+                'BUY': '#22c55e',
+                'WEAK_BUY': '#86efac',
+                'NEUTRAL': '#9ca3af',
+                'WEAK_SELL': '#fca5a5',
+                'SELL': '#ef4444',
+                'STRONG_SELL': '#dc2626'
+            };
+            return colors[signal] || '#9ca3af';
+        }
+    </script>
+
+    {% block extra_js %}
+    {% endblock %}
+</body>
+</html>
