@@ -204,7 +204,7 @@ def decision_history(request):
 
     # Get filter options
     symbols = Symbol.objects.filter(is_active=True).order_by('symbol')
-    timeframes = Timeframe.objects.filter(is_active=True).order_by('sort_order')
+    timeframes = Timeframe.objects.all().order_by('display_order', 'minutes')
     signals = Decision.SIGNAL_CHOICES
 
     # Calculate statistics for filtered results
