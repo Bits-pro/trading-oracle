@@ -20,10 +20,22 @@ class Command(BaseCommand):
             help='Symbols to analyze (space-separated)'
         )
         parser.add_argument(
+            '--symbol',
+            dest='single_symbols',
+            nargs='+',
+            help='Symbol(s) to analyze (alias for --symbols)'
+        )
+        parser.add_argument(
             '--timeframes',
             nargs='+',
             default=['1h', '4h', '1d'],
             help='Timeframes to analyze (space-separated)'
+        )
+        parser.add_argument(
+            '--timeframe',
+            dest='single_timeframes',
+            nargs='+',
+            help='Timeframe(s) to analyze (alias for --timeframes)'
         )
         parser.add_argument(
             '--market-types',
@@ -38,8 +50,8 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        symbols_input = options['symbols']
-        timeframes_input = options['timeframes']
+        symbols_input = options['single_symbols'] or options['symbols']
+        timeframes_input = options['single_timeframes'] or options['timeframes']
         market_types_input = options['market_types']
         verbose = options['verbose']
 
