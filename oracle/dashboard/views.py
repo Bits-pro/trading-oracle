@@ -105,18 +105,33 @@ def feature_analysis(request):
     Feature analysis dashboard
     Shows power, effect, and accuracy for each feature
     """
+    # Get filter parameters
+    category_filter = request.GET.get('category', '')
+    show_all = request.GET.get('show_all', '0') == '1'
+
+    # Get time range
+    days = int(request.GET.get('days', 30))
+    start_date = timezone.now() - timedelta(days=days)
+
     # Get all features
     features = Feature.objects.filter(is_active=True)
+
+    if category_filter:
+        features = features.filter(category=category_filter)
 
     # Calculate statistics for each feature
     feature_stats = []
 
     for feature in features:
-        # Get recent contributions
+        # Get recent contributions - use select_related for performance
         contributions = FeatureContribution.objects.filter(
             feature=feature,
-            decision__created_at__gte=timezone.now() - timedelta(days=30)
-        )
+            decision__created_at__gte=start_date
+        ).select_related('decision')
+
+        # Skip features with no contributions unless show_all is True
+        if not contributions.exists() and not show_all:
+            continue
 
         if contributions.exists():
             # Calculate average contribution (power)
@@ -146,11 +161,11 @@ def feature_analysis(request):
             # Calculate power (absolute average contribution)
             power = abs(avg_contribution)
 
-            # Get decisions using this feature
-            decisions_with_feature = Decision.objects.filter(
+            # Get decisions using this feature (optimized count)
+            decisions_count = Decision.objects.filter(
                 featurecontribution__feature=feature,
-                created_at__gte=timezone.now() - timedelta(days=30)
-            ).distinct()
+                created_at__gte=start_date
+            ).distinct().count()
 
             # Get latest raw value
             latest_contribution = contributions.order_by('-decision__created_at').first()
@@ -166,10 +181,26 @@ def feature_analysis(request):
                 'latest_value': latest_value,
                 'latest_explanation': latest_explanation,
                 'usage_count': total_count,
-                'decisions_count': decisions_with_feature.count(),
+                'decisions_count': decisions_count,
                 'positive_count': positive_count,
                 'negative_count': negative_count,
                 'neutral_count': total_count - positive_count - negative_count,
+            })
+        else:
+            # Feature with no contributions (only if show_all)
+            feature_stats.append({
+                'feature': feature,
+                'power': 0,
+                'effect': 'N/A',
+                'effect_strength': 0,
+                'avg_contribution': 0,
+                'latest_value': None,
+                'latest_explanation': 'No data available',
+                'usage_count': 0,
+                'decisions_count': 0,
+                'positive_count': 0,
+                'negative_count': 0,
+                'neutral_count': 0,
             })
 
     # Sort by power (descending)
@@ -183,10 +214,18 @@ def feature_analysis(request):
             categories[cat] = []
         categories[cat].append(stat)
 
+    # Get available categories for filter
+    all_categories = Feature.objects.filter(is_active=True).values_list('category', flat=True).distinct()
+
     context = {
         'feature_stats': feature_stats,
         'categories': categories,
         'total_features': len(feature_stats),
+        'all_categories': sorted(all_categories),
+        'category_filter': category_filter,
+        'days': days,
+        'show_all': show_all,
+        'has_data': len(feature_stats) > 0,
     }
 
     return render(request, 'dashboard/features.html', context)
