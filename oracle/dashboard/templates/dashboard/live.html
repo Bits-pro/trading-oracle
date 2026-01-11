@@ -89,6 +89,10 @@
             <div class="text-xs text-gray-400">
                 Source: last decision
             </div>
+            {% elif latest_market_data|get_item:symbol.symbol|get_item:'source' == 'provider' %}
+            <div class="text-xs text-gray-400">
+                Source: live provider
+            </div>
             {% endif %}
         </div>
         {% else %}

@@ -15,6 +15,7 @@ from oracle.models import (
     Decision, Symbol, Timeframe, Feature, MarketType,
     MarketData, FeatureContribution
 )
+from oracle.providers import BinanceProvider, YFinanceProvider
 
 
 def dashboard_home(request):
@@ -250,6 +251,9 @@ def live_monitor(request):
     """
     Live monitoring dashboard with real-time updates
     """
+    crypto_provider = BinanceProvider()
+    traditional_provider = YFinanceProvider()
+
     # Get latest decisions
     latest_decisions = Decision.objects.select_related(
         'symbol', 'timeframe', 'market_type'
@@ -274,6 +278,32 @@ def live_monitor(request):
                 'source': 'market',
             }
             continue
+
+        try:
+            if symbol.asset_type == 'CRYPTO':
+                provider_symbol = f"{symbol.base_currency}/{symbol.quote_currency}"
+                ticker = crypto_provider.fetch_ticker(provider_symbol)
+                if ticker.get('last_price') is not None:
+                    latest_market_data[symbol.symbol] = {
+                        'close': float(ticker['last_price']),
+                        'volume': float(ticker['volume_24h']) if ticker.get('volume_24h') else None,
+                        'timestamp': ticker.get('timestamp'),
+                        'source': 'provider',
+                    }
+                    continue
+            else:
+                df = traditional_provider.fetch_ohlcv(symbol.symbol, '1d', limit=1)
+                if not df.empty:
+                    latest_row = df.iloc[-1]
+                    latest_market_data[symbol.symbol] = {
+                        'close': float(latest_row['close']),
+                        'volume': float(latest_row['volume']) if latest_row.get('volume') else None,
+                        'timestamp': latest_row['timestamp'],
+                        'source': 'provider',
+                    }
+                    continue
+        except Exception:
+            pass
 
         latest_decision = Decision.objects.filter(symbol=symbol).order_by('-created_at').first()
         if latest_decision and latest_decision.entry_price is not None:
