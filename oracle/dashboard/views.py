@@ -30,7 +30,7 @@ def dashboard_home(request):
 
     # Overall statistics
     total_decisions = Decision.objects.count()
-    decisions_24h = Decision.objects.filter(timestamp__gte=last_24h).count()
+    decisions_24h = Decision.objects.filter(created_at__gte=last_24h).count()
 
     # Active symbols
     active_symbols = Symbol.objects.filter(is_active=True).count()
@@ -42,13 +42,13 @@ def dashboard_home(request):
 
     # Signal distribution (last 7 days)
     signal_distribution = Decision.objects.filter(
-        timestamp__gte=last_7d
+        created_at__gte=last_7d
     ).values('signal').annotate(count=Count('id')).order_by('-count')
 
     # Recent decisions
     recent_decisions = Decision.objects.select_related(
         'symbol', 'timeframe', 'market_type'
-    ).order_by('-timestamp')[:20]
+    ).order_by('-created_at')[:20]
 
     # Performance by timeframe
     performance_by_tf = Decision.objects.values(
@@ -60,7 +60,7 @@ def dashboard_home(request):
 
     # Top performing symbols (by number of decisions)
     top_symbols = Decision.objects.filter(
-        timestamp__gte=last_7d
+        created_at__gte=last_7d
     ).values('symbol__symbol').annotate(
         count=Count('id'),
         avg_confidence=Avg('confidence')
@@ -95,7 +95,7 @@ def feature_analysis(request):
         # Get recent contributions
         contributions = FeatureContribution.objects.filter(
             feature=feature,
-            decision__timestamp__gte=timezone.now() - timedelta(days=30)
+            decision__created_at__gte=timezone.now() - timedelta(days=30)
         )
 
         if contributions.exists():
@@ -129,7 +129,7 @@ def feature_analysis(request):
             # Get decisions using this feature
             decisions_with_feature = Decision.objects.filter(
                 featurecontribution__feature=feature,
-                timestamp__gte=timezone.now() - timedelta(days=30)
+                created_at__gte=timezone.now() - timedelta(days=30)
             ).distinct()
 
             feature_stats.append({
@@ -178,7 +178,7 @@ def decision_history(request):
     # Base query
     decisions = Decision.objects.select_related(
         'symbol', 'timeframe', 'market_type'
-    ).order_by('-timestamp')
+    ).order_by('-created_at')
 
     # Apply filters
     if symbol_filter:
@@ -190,7 +190,7 @@ def decision_history(request):
 
     # Time filter
     decisions = decisions.filter(
-        timestamp__gte=timezone.now() - timedelta(days=days)
+        created_at__gte=timezone.now() - timedelta(days=days)
     )
 
     # Pagination
@@ -209,7 +209,7 @@ def decision_history(request):
 
     # Calculate statistics for filtered results
     all_filtered = Decision.objects.filter(
-        timestamp__gte=timezone.now() - timedelta(days=days)
+        created_at__gte=timezone.now() - timedelta(days=days)
     )
     if symbol_filter:
         all_filtered = all_filtered.filter(symbol__symbol=symbol_filter)
@@ -253,19 +253,19 @@ def live_monitor(request):
     # Get latest decisions
     latest_decisions = Decision.objects.select_related(
         'symbol', 'timeframe', 'market_type'
-    ).order_by('-timestamp')[:10]
+    ).order_by('-created_at')[:10]
 
     # Active symbols with latest prices
     active_symbols = Symbol.objects.filter(is_active=True)
 
     # System status
-    last_decision = Decision.objects.order_by('-timestamp').first()
-    last_update = last_decision.timestamp if last_decision else None
+    last_decision = Decision.objects.order_by('-created_at').first()
+    last_update = last_decision.created_at if last_decision else None
 
     # Get latest market data
     latest_market_data = {}
     for symbol in active_symbols:
-        latest = MarketData.objects.filter(symbol=symbol).order_by('-timestamp').first()
+        latest = MarketData.objects.filter(symbol=symbol).order_by('-created_at').first()
         if latest:
             latest_market_data[symbol.symbol] = {
                 'close': float(latest.close),
@@ -351,9 +351,9 @@ def api_decision_chart_data(request):
 
     # Get decisions grouped by date and signal
     decisions = Decision.objects.filter(
-        timestamp__gte=start_date
+        created_at__gte=start_date
     ).annotate(
-        date=TruncDate('timestamp')
+        date=TruncDate('created_at')
     ).values('date', 'signal').annotate(
         count=Count('id')
     ).order_by('date', 'signal')
@@ -400,7 +400,7 @@ def api_confidence_distribution(request):
     days = int(request.GET.get('days', 30))
     start_date = timezone.now() - timedelta(days=days)
 
-    decisions = Decision.objects.filter(timestamp__gte=start_date)
+    decisions = Decision.objects.filter(created_at__gte=start_date)
 
     # Create bins: 0-50, 50-60, 60-70, 70-80, 80-90, 90-100
     bins = [
@@ -437,7 +437,7 @@ def api_feature_power_chart(request):
 
     # Get feature contributions
     feature_power = FeatureContribution.objects.filter(
-        decision__timestamp__gte=start_date
+        decision__created_at__gte=start_date
     ).values('feature__name', 'feature__category').annotate(
         avg_contribution=Avg('contribution'),
         total_usage=Count('id')
@@ -485,7 +485,7 @@ def api_consensus_breakdown(request):
     days = int(request.GET.get('days', 30))
     start_date = timezone.now() - timedelta(days=days)
 
-    decisions = Decision.objects.filter(timestamp__gte=start_date)
+    decisions = Decision.objects.filter(created_at__gte=start_date)
 
     # Extract consensus level from regime_context
     consensus_levels = {
@@ -521,13 +521,13 @@ def api_live_updates(request):
         id__gt=last_id
     ).select_related(
         'symbol', 'timeframe', 'market_type'
-    ).order_by('timestamp')[:20]
+    ).order_by('created_at')[:20]
 
     data = []
     for decision in new_decisions:
         data.append({
             'id': decision.id,
-            'timestamp': decision.timestamp.isoformat(),
+            'timestamp': decision.created_at.isoformat(),
             'symbol': decision.symbol.symbol,
             'timeframe': decision.timeframe.name,
             'signal': decision.signal,
@@ -551,20 +551,20 @@ def api_symbol_performance(request, symbol):
 
     decisions = Decision.objects.filter(
         symbol__symbol=symbol,
-        timestamp__gte=start_date
-    ).order_by('timestamp')
+        created_at__gte=start_date
+    ).order_by('created_at')
 
     # Get market data
     market_data = MarketData.objects.filter(
         symbol__symbol=symbol,
-        timestamp__gte=start_date
-    ).order_by('timestamp')
+        created_at__gte=start_date
+    ).order_by('created_at')
 
     # Format data
     decision_data = []
     for d in decisions:
         decision_data.append({
-            'timestamp': d.timestamp.isoformat(),
+            'timestamp': d.created_at.isoformat(),
             'signal': d.signal,
             'confidence': d.confidence,
             'entry_price': str(d.entry_price) if d.entry_price else None,
