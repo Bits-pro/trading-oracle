@@ -1,0 +1,286 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Live Monitor - Trading Oracle{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="mb-6 flex items-center justify-between">
+    <div>
+        <h2 class="text-3xl font-bold text-gray-900">Live Monitoring</h2>
+        <p class="mt-1 text-sm text-gray-600">Real-time decision tracking and system status</p>
+    </div>
+    <div class="flex items-center space-x-3">
+        <span class="flex items-center">
+            <span class="h-3 w-3 rounded-full bg-green-500 animate-pulse mr-2"></span>
+            <span class="text-sm font-medium text-gray-700">Live</span>
+        </span>
+        {% if last_update %}
+        <span class="text-sm text-gray-500">
+            Last update: {{ last_update|timesince }} ago
+        </span>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Auto-refresh Controls -->
+<div class="bg-white shadow rounded-lg p-4 mb-6" x-data="{ autoRefresh: true, interval: 30 }">
+    <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+            <label class="flex items-center cursor-pointer">
+                <input type="checkbox" x-model="autoRefresh" class="sr-only peer"
+                       @change="autoRefresh ? startAutoRefresh() : stopAutoRefresh()">
+                <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                <span class="ml-3 text-sm font-medium text-gray-900">Auto-refresh</span>
+            </label>
+
+            <select x-model="interval" class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    @change="autoRefresh && restartAutoRefresh()">
+                <option value="10">Every 10s</option>
+                <option value="30">Every 30s</option>
+                <option value="60">Every 60s</option>
+            </select>
+        </div>
+
+        <button onclick="location.reload()"
+                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
+            <i class="fas fa-sync-alt mr-2"></i>
+            Refresh Now
+        </button>
+    </div>
+</div>
+
+<!-- Active Symbols Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+    {% for symbol in active_symbols %}
+    <div class="bg-white shadow rounded-lg p-5">
+        <div class="flex items-center justify-between mb-3">
+            <h3 class="text-lg font-semibold text-gray-900">{{ symbol.symbol }}</h3>
+            <span class="px-2 py-1 bg-gray-100 rounded text-xs text-gray-600">
+                {{ symbol.asset_type }}
+            </span>
+        </div>
+
+        {% if symbol.symbol in latest_market_data %}
+        <div class="space-y-2">
+            <div class="flex justify-between">
+                <span class="text-sm text-gray-500">Price:</span>
+                <span class="text-sm font-semibold text-gray-900">
+                    ${{ latest_market_data|get_item:symbol.symbol|get_item:'close'|floatformat:2 }}
+                </span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-sm text-gray-500">Volume:</span>
+                <span class="text-sm font-semibold text-gray-900">
+                    {{ latest_market_data|get_item:symbol.symbol|get_item:'volume'|floatformat:0 }}
+                </span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-sm text-gray-500">Updated:</span>
+                <span class="text-xs text-gray-500">
+                    {{ latest_market_data|get_item:symbol.symbol|get_item:'timestamp'|timesince }} ago
+                </span>
+            </div>
+        </div>
+        {% else %}
+        <p class="text-sm text-gray-500">No market data available</p>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Latest Decisions -->
+<div class="bg-white shadow rounded-lg">
+    <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+        <h3 class="text-lg font-semibold text-gray-900">
+            <i class="fas fa-bolt mr-2 text-yellow-500"></i>
+            Latest Decisions
+        </h3>
+        <span class="text-sm text-gray-500" id="decision-count">
+            {{ latest_decisions|length }} shown
+        </span>
+    </div>
+
+    <div id="decisions-container" class="divide-y divide-gray-200">
+        {% for decision in latest_decisions %}
+        <div class="p-6 hover:bg-gray-50 transition-colors decision-row" data-decision-id="{{ decision.id }}">
+            <div class="flex items-center justify-between">
+                <div class="flex-1">
+                    <div class="flex items-center space-x-3 mb-2">
+                        <h4 class="text-lg font-semibold text-gray-900">{{ decision.symbol.symbol }}</h4>
+                        <span class="px-2 py-1 bg-gray-100 rounded text-xs text-gray-600">
+                            {{ decision.timeframe.name }}
+                        </span>
+                        <span class="signal-{{ decision.signal }} px-3 py-1 rounded text-xs font-semibold">
+                            {{ decision.signal }}
+                        </span>
+                        <span class="bias-{{ decision.bias }} text-sm font-medium">
+                            {{ decision.bias }}
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div>
+                            <span class="text-gray-500">Confidence:</span>
+                            <div class="flex items-center mt-1">
+                                <span class="font-semibold mr-2">{{ decision.confidence }}%</span>
+                                <div class="w-20 bg-gray-200 rounded-full h-2">
+                                    <div class="bg-indigo-600 h-2 rounded-full" style="width: {{ decision.confidence }}%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if decision.entry_price %}
+                        <div>
+                            <span class="text-gray-500">Entry:</span>
+                            <p class="font-semibold text-gray-900 mt-1">${{ decision.entry_price|floatformat:2 }}</p>
+                        </div>
+                        {% endif %}
+
+                        {% if decision.stop_loss %}
+                        <div>
+                            <span class="text-gray-500">Stop Loss:</span>
+                            <p class="font-semibold text-red-600 mt-1">${{ decision.stop_loss|floatformat:2 }}</p>
+                        </div>
+                        {% endif %}
+
+                        {% if decision.take_profit %}
+                        <div>
+                            <span class="text-gray-500">Take Profit:</span>
+                            <p class="font-semibold text-green-600 mt-1">${{ decision.take_profit|floatformat:2 }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="ml-4 flex flex-col items-end space-y-2">
+                    <span class="text-xs text-gray-500">
+                        {{ decision.timestamp|date:"M d, H:i:s" }}
+                    </span>
+                    <a href="{% url 'dashboard:decision_detail' decision.id %}"
+                       class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-indigo-700 bg-indigo-100 hover:bg-indigo-200">
+                        <i class="fas fa-eye mr-1"></i> View Details
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="p-6 text-center text-gray-500">
+            <i class="fas fa-inbox text-4xl mb-2"></i>
+            <p>No decisions yet. Waiting for signals...</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let autoRefreshInterval = null;
+    let lastDecisionId = {{ latest_decisions.0.id|default:0 }};
+
+    function startAutoRefresh() {
+        const intervalSeconds = document.querySelector('[x-model="interval"]').value;
+        autoRefreshInterval = setInterval(checkForUpdates, intervalSeconds * 1000);
+    }
+
+    function stopAutoRefresh() {
+        if (autoRefreshInterval) {
+            clearInterval(autoRefreshInterval);
+            autoRefreshInterval = null;
+        }
+    }
+
+    function restartAutoRefresh() {
+        stopAutoRefresh();
+        startAutoRefresh();
+    }
+
+    function checkForUpdates() {
+        fetch(`{% url 'dashboard:api_live_updates' %}?last_id=${lastDecisionId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.decisions.length > 0) {
+                    // Prepend new decisions
+                    const container = document.getElementById('decisions-container');
+
+                    data.decisions.forEach(decision => {
+                        const row = createDecisionRow(decision);
+                        container.insertBefore(row, container.firstChild);
+
+                        // Highlight new
+                        row.classList.add('bg-yellow-50');
+                        setTimeout(() => row.classList.remove('bg-yellow-50'), 3000);
+                    });
+
+                    // Update counter
+                    const count = container.querySelectorAll('.decision-row').length;
+                    document.getElementById('decision-count').textContent = `${count} shown`;
+
+                    // Update last ID
+                    lastDecisionId = data.latest_id;
+
+                    // Remove old rows (keep only last 10)
+                    const rows = container.querySelectorAll('.decision-row');
+                    if (rows.length > 10) {
+                        for (let i = 10; i < rows.length; i++) {
+                            rows[i].remove();
+                        }
+                    }
+                }
+            })
+            .catch(error => console.error('Error fetching updates:', error));
+    }
+
+    function createDecisionRow(decision) {
+        const row = document.createElement('div');
+        row.className = 'p-6 hover:bg-gray-50 transition-colors decision-row';
+        row.setAttribute('data-decision-id', decision.id);
+
+        row.innerHTML = `
+            <div class="flex items-center justify-between">
+                <div class="flex-1">
+                    <div class="flex items-center space-x-3 mb-2">
+                        <h4 class="text-lg font-semibold text-gray-900">${decision.symbol}</h4>
+                        <span class="px-2 py-1 bg-gray-100 rounded text-xs text-gray-600">${decision.timeframe}</span>
+                        <span class="signal-${decision.signal} px-3 py-1 rounded text-xs font-semibold">${decision.signal}</span>
+                        <span class="bias-${decision.bias} text-sm font-medium">${decision.bias}</span>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div>
+                            <span class="text-gray-500">Confidence:</span>
+                            <div class="flex items-center mt-1">
+                                <span class="font-semibold mr-2">${decision.confidence}%</span>
+                                <div class="w-20 bg-gray-200 rounded-full h-2">
+                                    <div class="bg-indigo-600 h-2 rounded-full" style="width: ${decision.confidence}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        ${decision.entry_price ? `
+                        <div>
+                            <span class="text-gray-500">Entry:</span>
+                            <p class="font-semibold text-gray-900 mt-1">$${parseFloat(decision.entry_price).toFixed(2)}</p>
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+                <div class="ml-4 flex flex-col items-end space-y-2">
+                    <span class="text-xs text-gray-500">${new Date(decision.timestamp).toLocaleString()}</span>
+                    <a href="/dashboard/decision/${decision.id}/"
+                       class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-indigo-700 bg-indigo-100 hover:bg-indigo-200">
+                        <i class="fas fa-eye mr-1"></i> View Details
+                    </a>
+                </div>
+            </div>
+        `;
+
+        return row;
+    }
+
+    // Start auto-refresh by default
+    document.addEventListener('DOMContentLoaded', function() {
+        if (document.querySelector('[x-model="autoRefresh"]').checked) {
+            startAutoRefresh();
+        }
+    });
+</script>
+{% endblock %}

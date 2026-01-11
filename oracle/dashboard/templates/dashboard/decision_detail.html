@@ -1,0 +1,248 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Decision #{{ decision.id }} - Trading Oracle{% endblock %}
+
+{% block content %}
+<!-- Back Button -->
+<div class="mb-4">
+    <a href="{% url 'dashboard:history' %}" class="text-indigo-600 hover:text-indigo-800">
+        <i class="fas fa-arrow-left mr-2"></i>Back to History
+    </a>
+</div>
+
+<!-- Decision Header -->
+<div class="bg-gradient-to-r from-indigo-600 to-purple-600 shadow-lg rounded-lg p-8 mb-8 text-white">
+    <div class="flex items-center justify-between mb-4">
+        <div>
+            <h1 class="text-4xl font-bold">{{ decision.symbol.symbol }}</h1>
+            <p class="text-indigo-100 mt-1">Decision #{{ decision.id }} | {{ decision.timestamp|date:"F d, Y - H:i:s" }}</p>
+        </div>
+        <div class="text-right">
+            <div class="text-sm text-indigo-100 mb-1">{{ decision.timeframe.name }} | {{ decision.market_type.name }}</div>
+            <span class="signal-{{ decision.signal }} px-4 py-2 rounded-lg text-lg font-bold inline-block">
+                {{ decision.signal }}
+            </span>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mt-6">
+        <div class="bg-white bg-opacity-20 rounded-lg p-4">
+            <div class="text-indigo-100 text-sm mb-1">Bias</div>
+            <div class="text-2xl font-bold">{{ decision.bias }}</div>
+        </div>
+        <div class="bg-white bg-opacity-20 rounded-lg p-4">
+            <div class="text-indigo-100 text-sm mb-1">Confidence</div>
+            <div class="text-2xl font-bold">{{ decision.confidence }}%</div>
+        </div>
+        {% if decision.risk_reward %}
+        <div class="bg-white bg-opacity-20 rounded-lg p-4">
+            <div class="text-indigo-100 text-sm mb-1">Risk:Reward</div>
+            <div class="text-2xl font-bold">{{ decision.risk_reward|floatformat:2 }}</div>
+        </div>
+        {% endif %}
+        <div class="bg-white bg-opacity-20 rounded-lg p-4">
+            <div class="text-indigo-100 text-sm mb-1">Raw Score</div>
+            <div class="text-2xl font-bold">{{ decision.raw_score|floatformat:2 }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Trade Parameters & Consensus -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <!-- Trade Parameters -->
+    <div class="bg-white shadow rounded-lg p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">
+            <i class="fas fa-dollar-sign mr-2 text-green-600"></i>
+            Trade Parameters
+        </h3>
+        <div class="space-y-3">
+            {% if decision.entry_price %}
+            <div class="flex justify-between items-center border-b pb-2">
+                <span class="text-gray-600">Entry Price</span>
+                <span class="text-lg font-semibold text-gray-900">${{ decision.entry_price|floatformat:2 }}</span>
+            </div>
+            {% endif %}
+
+            {% if decision.stop_loss %}
+            <div class="flex justify-between items-center border-b pb-2">
+                <span class="text-gray-600">Stop Loss</span>
+                <span class="text-lg font-semibold text-red-600">${{ decision.stop_loss|floatformat:2 }}</span>
+            </div>
+            {% endif %}
+
+            {% if decision.take_profit %}
+            <div class="flex justify-between items-center border-b pb-2">
+                <span class="text-gray-600">Take Profit</span>
+                <span class="text-lg font-semibold text-green-600">${{ decision.take_profit|floatformat:2 }}</span>
+            </div>
+            {% endif %}
+
+            {% if decision.risk_reward %}
+            <div class="flex justify-between items-center">
+                <span class="text-gray-600">Risk/Reward Ratio</span>
+                <span class="text-lg font-semibold text-blue-600">1:{{ decision.risk_reward|floatformat:2 }}</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Consensus Analysis -->
+    <div class="bg-white shadow rounded-lg p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">
+            <i class="fas fa-users mr-2 text-purple-600"></i>
+            Consensus Analysis
+        </h3>
+        <div class="space-y-3">
+            <div class="flex justify-between items-center">
+                <span class="text-gray-600">Agreement Level</span>
+                <span class="consensus-{{ consensus_data.level }} px-3 py-1 rounded-full text-sm font-semibold">
+                    {{ consensus_data.level|default:"UNKNOWN" }}
+                </span>
+            </div>
+
+            <div class="flex justify-between items-center">
+                <span class="text-gray-600">Consensus %</span>
+                <div class="flex items-center">
+                    <span class="text-lg font-semibold mr-2">{{ consensus_data.percentage|floatformat:0 }}%</span>
+                    <div class="w-24 bg-gray-200 rounded-full h-2">
+                        <div class="bg-purple-600 h-2 rounded-full" style="width: {{ consensus_data.percentage }}%"></div>
+                    </div>
+                </div>
+            </div>
+
+            {% if consensus_data.explanation %}
+            <div class="mt-4 p-3 bg-gray-50 rounded text-sm text-gray-700">
+                {{ consensus_data.explanation }}
+            </div>
+            {% endif %}
+
+            {% if consensus_data.conflicts %}
+            <div class="mt-4 p-3 bg-red-50 border-l-4 border-red-400">
+                <div class="font-semibold text-red-800 mb-1">
+                    <i class="fas fa-exclamation-triangle mr-1"></i> Conflicts Detected
+                </div>
+                <ul class="text-sm text-red-700 space-y-1">
+                    {% for conflict in consensus_data.conflicts %}
+                    <li>• {{ conflict }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Regime Context -->
+<div class="bg-white shadow rounded-lg p-6 mb-8">
+    <h3 class="text-lg font-semibold text-gray-900 mb-4">
+        <i class="fas fa-chart-area mr-2 text-blue-600"></i>
+        Market Regime Context
+    </h3>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {% for key, value in regime_context.items %}
+        <div class="border rounded-lg p-3">
+            <div class="text-xs text-gray-500 mb-1">{{ key|title|replace:"_":" " }}</div>
+            <div class="text-sm font-semibold text-gray-900">{{ value }}</div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Top Drivers -->
+<div class="bg-white shadow rounded-lg p-6 mb-8">
+    <h3 class="text-lg font-semibold text-gray-900 mb-4">
+        <i class="fas fa-star mr-2 text-yellow-500"></i>
+        Top 5 Drivers
+    </h3>
+    <div class="space-y-3">
+        {% for driver in top_drivers %}
+        <div class="border-l-4 {% if driver.contribution > 0 %}border-green-500 bg-green-50{% else %}border-red-500 bg-red-50{% endif %} p-4 rounded">
+            <div class="flex items-center justify-between mb-2">
+                <div class="font-semibold text-gray-900">{{ driver.name }}</div>
+                <span class="px-2 py-1 bg-white rounded text-xs font-medium text-gray-600">
+                    {{ driver.category }}
+                </span>
+            </div>
+            <div class="flex items-center justify-between">
+                <div class="text-sm text-gray-700">{{ driver.explanation }}</div>
+                <div class="text-right">
+                    <div class="text-lg font-bold {% if driver.contribution > 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                        {{ driver.contribution|floatformat:4|stringformat:"+.4f" }}
+                    </div>
+                    <div class="text-xs text-gray-500">
+                        Weight: {{ driver.weight|floatformat:2 }} | Strength: {{ driver.strength|floatformat:2 }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- All Feature Contributions by Category -->
+<div class="mb-8">
+    <h3 class="text-xl font-semibold text-gray-900 mb-4">
+        <i class="fas fa-layer-group mr-2 text-indigo-600"></i>
+        All Feature Contributions by Category
+    </h3>
+
+    {% for category, data in category_breakdown.items %}
+    <div class="bg-white shadow rounded-lg mb-4" x-data="{ open: false }">
+        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between cursor-pointer"
+             @click="open = !open">
+            <div class="flex items-center">
+                <h4 class="text-lg font-semibold text-gray-900">{{ category }}</h4>
+                <span class="ml-3 px-2 py-1 {% if data.total_contribution > 0 %}bg-green-100 text-green-800{% elif data.total_contribution < 0 %}bg-red-100 text-red-800{% else %}bg-gray-100 text-gray-800{% endif %} rounded-full text-xs font-semibold">
+                    Total: {{ data.total_contribution|floatformat:4|stringformat:"+.4f" }}
+                </span>
+                <span class="ml-2 px-2 py-1 bg-indigo-100 text-indigo-800 rounded-full text-xs font-semibold">
+                    {{ data.features|length }} features
+                </span>
+            </div>
+            <i class="fas" :class="open ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+        </div>
+
+        <div x-show="open" style="display: none;" class="p-6">
+            <div class="space-y-3">
+                {% for contrib in data.features %}
+                <div class="border rounded-lg p-4 hover:bg-gray-50">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="font-medium text-gray-900">{{ contrib.feature.name }}</div>
+                        <div class="text-right">
+                            <div class="text-lg font-semibold {% if contrib.contribution > 0 %}text-green-600{% elif contrib.contribution < 0 %}text-red-600{% else %}text-gray-600{% endif %}">
+                                {{ contrib.contribution|floatformat:4|stringformat:"+.4f" }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-sm text-gray-600">{{ contrib.explanation }}</div>
+                    <div class="mt-2 flex items-center justify-between text-xs text-gray-500">
+                        <span>Raw: {{ contrib.raw_value|floatformat:2 }}</span>
+                        <span>Direction: {{ contrib.direction }}</span>
+                        <span>Strength: {{ contrib.strength|floatformat:2 }}</span>
+                        <span>Weight: {{ contrib.weight|floatformat:2 }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Invalidation Conditions -->
+{% if invalidation_conditions %}
+<div class="bg-yellow-50 border-l-4 border-yellow-400 p-6 rounded-lg">
+    <h3 class="text-lg font-semibold text-yellow-800 mb-3">
+        <i class="fas fa-exclamation-triangle mr-2"></i>
+        Invalidation Conditions
+    </h3>
+    <ul class="space-y-2">
+        {% for condition in invalidation_conditions %}
+        <li class="text-sm text-yellow-700">
+            <i class="fas fa-times-circle mr-2"></i>{{ condition }}
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,249 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Feature Analysis - Trading Oracle{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="mb-6">
+    <h2 class="text-3xl font-bold text-gray-900">Feature Analysis</h2>
+    <p class="mt-1 text-sm text-gray-600">Power, effect, and accuracy metrics for all features</p>
+</div>
+
+<!-- Summary Cards -->
+<div class="grid grid-cols-1 gap-5 sm:grid-cols-3 mb-8">
+    <div class="bg-white overflow-hidden shadow rounded-lg p-5">
+        <div class="flex items-center">
+            <i class="fas fa-sliders-h text-indigo-600 text-3xl mr-4"></i>
+            <div>
+                <dt class="text-sm font-medium text-gray-500">Total Features</dt>
+                <dd class="text-2xl font-semibold text-gray-900">{{ total_features }}</dd>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white overflow-hidden shadow rounded-lg p-5">
+        <div class="flex items-center">
+            <i class="fas fa-layer-group text-green-600 text-3xl mr-4"></i>
+            <div>
+                <dt class="text-sm font-medium text-gray-500">Categories</dt>
+                <dd class="text-2xl font-semibold text-gray-900">{{ categories|length }}</dd>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white overflow-hidden shadow rounded-lg p-5">
+        <div class="flex items-center">
+            <i class="fas fa-calendar-alt text-purple-600 text-3xl mr-4"></i>
+            <div>
+                <dt class="text-sm font-medium text-gray-500">Analysis Period</dt>
+                <dd class="text-2xl font-semibold text-gray-900">30 Days</dd>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Feature Power Chart -->
+<div class="bg-white shadow rounded-lg p-6 mb-8">
+    <h3 class="text-lg font-semibold text-gray-900 mb-4">
+        <i class="fas fa-bolt mr-2 text-yellow-500"></i>
+        Feature Power Comparison (Top 15)
+    </h3>
+    <canvas id="featurePowerChart" height="400"></canvas>
+</div>
+
+<!-- Features by Category -->
+<div class="mb-8">
+    <h3 class="text-xl font-semibold text-gray-900 mb-4">
+        <i class="fas fa-folder-open mr-2 text-blue-600"></i>
+        Features by Category
+    </h3>
+
+    {% for category, features in categories.items %}
+    <div class="bg-white shadow rounded-lg mb-6" x-data="{ open: true }">
+        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between cursor-pointer"
+             @click="open = !open">
+            <div class="flex items-center">
+                <h4 class="text-lg font-semibold text-gray-900">
+                    {{ category }}
+                </h4>
+                <span class="ml-3 px-2 py-1 bg-indigo-100 text-indigo-800 rounded-full text-xs font-semibold">
+                    {{ features|length }} features
+                </span>
+            </div>
+            <i class="fas" :class="open ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+        </div>
+
+        <div x-show="open" class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Feature
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Power
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Effect
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Contribution
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Usage
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Distribution
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for stat in features %}
+                    <tr class="hover:bg-gray-50">
+                        <!-- Feature Name -->
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">
+                                {{ stat.feature.name }}
+                            </div>
+                            <div class="text-xs text-gray-500">
+                                {{ stat.feature.description|truncatewords:10 }}
+                            </div>
+                        </td>
+
+                        <!-- Power -->
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 w-16">
+                                    <span class="text-sm font-semibold text-gray-900">
+                                        {{ stat.power|floatformat:4 }}
+                                    </span>
+                                </div>
+                                <div class="ml-2 flex-1">
+                                    <div class="h-2 bg-gray-200 rounded-full w-20">
+                                        {% widthratio stat.power 2.0 100 as power_pct %}
+                                        <div class="h-2 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full"
+                                             style="width: {{ power_pct|default:0 }}%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+
+                        <!-- Effect -->
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="effect-{{ stat.effect }} px-3 py-1 rounded-full text-xs font-semibold border">
+                                {{ stat.effect }}
+                            </span>
+                            <div class="text-xs text-gray-500 mt-1">
+                                {{ stat.effect_strength|floatformat:0 }}% dominance
+                            </div>
+                        </td>
+
+                        <!-- Avg Contribution -->
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            <span class="{% if stat.avg_contribution > 0 %}text-green-600{% elif stat.avg_contribution < 0 %}text-red-600{% else %}text-gray-600{% endif %} font-semibold">
+                                {{ stat.avg_contribution|floatformat:4|stringformat:"+.4f" }}
+                            </span>
+                        </td>
+
+                        <!-- Usage Count -->
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                            <div>{{ stat.usage_count }} times</div>
+                            <div class="text-xs text-gray-500">
+                                in {{ stat.decisions_count }} decisions
+                            </div>
+                        </td>
+
+                        <!-- Distribution -->
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center space-x-2 text-xs">
+                                <div class="flex items-center">
+                                    <i class="fas fa-arrow-up text-green-600 mr-1"></i>
+                                    <span class="text-green-600 font-semibold">{{ stat.positive_count }}</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <i class="fas fa-minus text-gray-500 mr-1"></i>
+                                    <span class="text-gray-600">{{ stat.neutral_count }}</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <i class="fas fa-arrow-down text-red-600 mr-1"></i>
+                                    <span class="text-red-600 font-semibold">{{ stat.negative_count }}</span>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Legend -->
+<div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-8">
+    <div class="flex">
+        <div class="flex-shrink-0">
+            <i class="fas fa-info-circle text-blue-400"></i>
+        </div>
+        <div class="ml-3">
+            <h3 class="text-sm font-medium text-blue-800">Understanding Feature Metrics</h3>
+            <div class="mt-2 text-sm text-blue-700">
+                <ul class="list-disc list-inside space-y-1">
+                    <li><strong>Power:</strong> Average absolute contribution (higher = stronger influence on decisions)</li>
+                    <li><strong>Effect:</strong> Directional bias - BULLISH (mostly positive), BEARISH (mostly negative), or NEUTRAL</li>
+                    <li><strong>Contribution:</strong> Average contribution value (positive = bullish, negative = bearish)</li>
+                    <li><strong>Usage:</strong> Number of times feature was calculated and used in decisions</li>
+                    <li><strong>Distribution:</strong> Count of positive/neutral/negative signals from this feature</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Feature Power Chart
+    fetch('{% url "dashboard:api_feature_power" %}?limit=15&days=30')
+        .then(response => response.json())
+        .then(data => {
+            const ctx = document.getElementById('featurePowerChart').getContext('2d');
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.labels,
+                    datasets: data.datasets
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Average Absolute Contribution'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.dataset.label || '';
+                                    const value = context.parsed.x || 0;
+                                    return `${label}: ${value.toFixed(4)}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+</script>
+{% endblock %}
