@@ -13,7 +13,7 @@ import json
 
 from oracle.models import (
     Decision, Symbol, Timeframe, Feature, MarketType,
-    MarketData, FeatureContribution
+    MarketData, FeatureContribution, SymbolPerformance
 )
 
 
@@ -66,6 +66,24 @@ def dashboard_home(request):
         avg_confidence=Avg('confidence')
     ).order_by('-count')[:10]
 
+    # Get latest ROI data for active symbols
+    symbol_performance = []
+    for symbol in Symbol.objects.filter(is_active=True):
+        latest_perf = SymbolPerformance.objects.filter(symbol=symbol).order_by('-timestamp').first()
+        if latest_perf:
+            symbol_performance.append({
+                'symbol': symbol.symbol,
+                'asset_type': symbol.asset_type,
+                'current_price': latest_perf.current_price,
+                'roi_1h': latest_perf.roi_1h,
+                'roi_1d': latest_perf.roi_1d,
+                'roi_1w': latest_perf.roi_1w,
+                'roi_1m': latest_perf.roi_1m,
+                'roi_1y': latest_perf.roi_1y,
+                'volume_24h': latest_perf.volume_24h,
+                'volatility_24h': latest_perf.volatility_24h,
+            })
+
     context = {
         'total_decisions': total_decisions,
         'decisions_24h': decisions_24h,
@@ -75,6 +93,7 @@ def dashboard_home(request):
         'recent_decisions': recent_decisions,
         'performance_by_tf': performance_by_tf,
         'top_symbols': top_symbols,
+        'symbol_performance': symbol_performance,
     }
 
     return render(request, 'dashboard/home.html', context)

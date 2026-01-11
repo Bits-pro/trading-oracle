@@ -436,3 +436,50 @@ class FeatureWeight(models.Model):
         if self.timeframe:
             parts.append(self.timeframe.name)
         return f"{' - '.join(parts)}: {self.weight}"
+
+
+class SymbolPerformance(models.Model):
+    """Track performance metrics (ROI) for symbols"""
+
+    symbol = models.ForeignKey(Symbol, on_delete=models.CASCADE, related_name='performance_metrics')
+    market_type = models.ForeignKey(MarketType, on_delete=models.CASCADE)
+
+    # Current price
+    current_price = models.DecimalField(max_digits=20, decimal_places=8)
+
+    # ROI over different periods (percentage)
+    roi_1h = models.DecimalField(max_digits=10, decimal_places=4, null=True, blank=True, help_text="1 hour ROI %")
+    roi_1d = models.DecimalField(max_digits=10, decimal_places=4, null=True, blank=True, help_text="1 day ROI %")
+    roi_1w = models.DecimalField(max_digits=10, decimal_places=4, null=True, blank=True, help_text="1 week ROI %")
+    roi_1m = models.DecimalField(max_digits=10, decimal_places=4, null=True, blank=True, help_text="1 month ROI %")
+    roi_1y = models.DecimalField(max_digits=10, decimal_places=4, null=True, blank=True, help_text="1 year ROI %")
+
+    # Volume data
+    volume_24h = models.DecimalField(max_digits=30, decimal_places=8, null=True, blank=True)
+    volume_change_24h = models.DecimalField(max_digits=10, decimal_places=4, null=True, blank=True, help_text="24h volume change %")
+
+    # Volatility
+    volatility_24h = models.DecimalField(max_digits=10, decimal_places=4, null=True, blank=True, help_text="24h volatility %")
+
+    # High/Low
+    high_24h = models.DecimalField(max_digits=20, decimal_places=8, null=True, blank=True)
+    low_24h = models.DecimalField(max_digits=20, decimal_places=8, null=True, blank=True)
+
+    # Market cap (for crypto)
+    market_cap = models.DecimalField(max_digits=30, decimal_places=2, null=True, blank=True)
+    market_cap_rank = models.IntegerField(null=True, blank=True)
+
+    # Trading activity
+    trades_24h = models.IntegerField(null=True, blank=True)
+
+    timestamp = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+        indexes = [
+            models.Index(fields=['symbol', '-timestamp']),
+            models.Index(fields=['symbol', 'market_type', '-timestamp']),
+        ]
+
+    def __str__(self):
+        return f"{self.symbol.symbol} - {self.timestamp.strftime('%Y-%m-%d %H:%M')}"
