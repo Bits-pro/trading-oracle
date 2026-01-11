@@ -12,7 +12,7 @@ from decimal import Decimal
 import json
 
 from oracle.models import (
-    Decision, Symbol, Timeframe, Feature, FeatureValue,
+    Decision, Symbol, Timeframe, Feature, MarketType,
     MarketData, FeatureContribution
 )
 
