@@ -27,13 +27,13 @@
                     <option value="90" {% if days == 90 %}selected{% endif %}>Last 90 Days</option>
                 </select>
 
-                <input type="hidden" name="show_all" value="{{ '1' if show_all else '0' }}">
+                <input type="hidden" name="show_all" value="{% if show_all %}1{% else %}0{% endif %}">
             </form>
 
-            <a href="?show_all={{ '0' if show_all else '1' }}&category={{ category_filter }}&days={{ days }}"
+            <a href="?show_all={% if show_all %}0{% else %}1{% endif %}&category={{ category_filter }}&days={{ days }}"
                class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
                 <i class="fas fa-{% if show_all %}eye-slash{% else %}eye{% endif %} mr-2"></i>
-                {{ 'Hide Empty' if show_all else 'Show All' }}
+                {% if show_all %}Hide Empty{% else %}Show All{% endif %}
             </a>
         </div>
     </div>
