@@ -239,6 +239,39 @@ class Command(BaseCommand):
                             regime_context=sanitize_for_json(decision_output.regime_context)
                         )
 
+                        # Sanitize top drivers for FeatureContribution
+                        sanitized_top_drivers = sanitize_for_json([d for d in decision_output.top_drivers])
+
+                        # Create FeatureContribution records for all features
+                        for feature_result in decision_output.all_features:
+                            # Get or create the Feature record
+                            from oracle.models import Feature, FeatureContribution
+                            feature, _ = Feature.objects.get_or_create(
+                                name=feature_result.name,
+                                defaults={
+                                    'category': feature_result.category,
+                                    'description': feature_result.explanation[:200] if feature_result.explanation else '',
+                                }
+                            )
+
+                            # Find this feature's contribution from top_drivers
+                            contribution_data = next(
+                                (d for d in sanitized_top_drivers if d['name'] == feature_result.name),
+                                None
+                            )
+
+                            if contribution_data:
+                                FeatureContribution.objects.create(
+                                    decision=decision,
+                                    feature=feature,
+                                    raw_value=contribution_data['raw_value'],
+                                    direction=contribution_data['direction'],
+                                    strength=contribution_data['strength'],
+                                    weight=contribution_data['weight'],
+                                    contribution=contribution_data['contribution'],
+                                    explanation=contribution_data['explanation']
+                                )
+
                         decisions_created += 1
 
                         # Display decision

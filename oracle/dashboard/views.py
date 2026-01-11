@@ -921,6 +921,35 @@ def api_run_analysis(request):
                             regime_context=sanitized_regime
                         )
 
+                        # Create FeatureContribution records for all features
+                        for feature_result in decision_output.all_features:
+                            # Get or create the Feature record
+                            feature, _ = Feature.objects.get_or_create(
+                                name=feature_result.name,
+                                defaults={
+                                    'category': feature_result.category,
+                                    'description': feature_result.explanation[:200] if feature_result.explanation else '',
+                                }
+                            )
+
+                            # Find this feature's contribution from top_drivers
+                            contribution_data = next(
+                                (d for d in sanitized_top_drivers if d['name'] == feature_result.name),
+                                None
+                            )
+
+                            if contribution_data:
+                                FeatureContribution.objects.create(
+                                    decision=decision,
+                                    feature=feature,
+                                    raw_value=contribution_data['raw_value'],
+                                    direction=contribution_data['direction'],
+                                    strength=contribution_data['strength'],
+                                    weight=contribution_data['weight'],
+                                    contribution=contribution_data['contribution'],
+                                    explanation=contribution_data['explanation']
+                                )
+
                         decisions_created += 1
 
                     except Exception as e:
@@ -979,17 +1008,14 @@ def indicators_overview(request):
             if cat not in categories:
                 categories[cat] = []
 
-            # Parse metadata
-            metadata = contrib.metadata or {}
-
             categories[cat].append({
                 'name': contrib.feature.name,
-                'value': contrib.value,
+                'value': contrib.raw_value,
                 'direction': 'BULLISH' if contrib.contribution > 0 else ('BEARISH' if contrib.contribution < 0 else 'NEUTRAL'),
                 'contribution': float(contrib.contribution),
                 'power': abs(float(contrib.contribution)),
                 'explanation': contrib.explanation,
-                'metadata': metadata
+                'metadata': {}  # Metadata not stored in FeatureContribution model
             })
 
         symbol_data.append({
