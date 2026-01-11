@@ -25,12 +25,12 @@ class YFinanceProvider(BaseProvider):
     # Symbol mapping: our symbols -> yfinance tickers
     SYMBOL_MAP = {
         # Gold
-        'XAUUSD': 'GC=F',  # Gold futures
+        'XAUUSD': 'XAUUSD=X',  # Gold spot price (Yahoo format)
         'GLD': 'GLD',  # Gold ETF
         'GDX': 'GDX',  # Gold miners ETF
 
         # Silver
-        'XAGUSD': 'SI=F',  # Silver futures
+        'XAGUSD': 'XAGUSD=X',  # Silver spot price (Yahoo format)
 
         # Copper
         'COPPER': 'HG=F',  # Copper futures
