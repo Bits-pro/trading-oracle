@@ -264,6 +264,8 @@ class MacroDataProvider(YFinanceProvider):
         Returns:
             Dict of {indicator_name: DataFrame}
         """
+        logging.getLogger("yfinance").setLevel(logging.CRITICAL)
+        logging.getLogger("yfinance.base").setLevel(logging.CRITICAL)
         indicators = {}
 
         macro_symbols = ['DXY', 'VIX', 'TNX', 'TIP', 'SPX']
