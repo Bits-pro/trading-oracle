@@ -93,7 +93,7 @@ class Command(BaseCommand):
         else:
             self.stdout.write('Fetching macro data...')
             try:
-                macro_context = macro_provider.fetch_all_macro_indicators()
+                macro_context = macro_provider.fetch_all_macro_indicators(log_empty=verbose)
                 self.stdout.write(self.style.SUCCESS(f'  ✓ Fetched {len(macro_context)} macro indicators'))
             except Exception as e:
                 self.stdout.write(self.style.WARNING(f'  ! Error fetching macro data: {e}'))

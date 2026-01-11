@@ -257,7 +257,7 @@ class MacroDataProvider(YFinanceProvider):
 
     logger = logging.getLogger(__name__)
 
-    def fetch_all_macro_indicators(self) -> Dict[str, pd.DataFrame]:
+    def fetch_all_macro_indicators(self, log_empty: bool = False) -> Dict[str, pd.DataFrame]:
         """
         Fetch all macro indicators at once
 
@@ -278,10 +278,12 @@ class MacroDataProvider(YFinanceProvider):
                     limit=100
                 )
                 if df.empty:
-                    self.logger.warning("Macro indicator %s returned no data.", symbol)
+                    if log_empty:
+                        self.logger.warning("Macro indicator %s returned no data.", symbol)
                     continue
                 indicators[symbol] = df
             except Exception as e:
-                self.logger.warning("Error fetching macro indicator %s: %s", symbol, e)
+                if log_empty:
+                    self.logger.warning("Error fetching macro indicator %s: %s", symbol, e)
 
         return indicators
