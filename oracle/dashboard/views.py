@@ -13,7 +13,7 @@ import json
 
 from oracle.models import (
     Decision, Symbol, Timeframe, Feature, MarketType,
-    MarketData, FeatureContribution
+    MarketData, FeatureContribution, SymbolPerformance
 )
 from oracle.providers import BinanceProvider, YFinanceProvider
 
@@ -67,6 +67,24 @@ def dashboard_home(request):
         avg_confidence=Avg('confidence')
     ).order_by('-count')[:10]
 
+    # Get latest ROI data for active symbols
+    symbol_performance = []
+    for symbol in Symbol.objects.filter(is_active=True):
+        latest_perf = SymbolPerformance.objects.filter(symbol=symbol).order_by('-timestamp').first()
+        if latest_perf:
+            symbol_performance.append({
+                'symbol': symbol.symbol,
+                'asset_type': symbol.asset_type,
+                'current_price': latest_perf.current_price,
+                'roi_1h': latest_perf.roi_1h,
+                'roi_1d': latest_perf.roi_1d,
+                'roi_1w': latest_perf.roi_1w,
+                'roi_1m': latest_perf.roi_1m,
+                'roi_1y': latest_perf.roi_1y,
+                'volume_24h': latest_perf.volume_24h,
+                'volatility_24h': latest_perf.volatility_24h,
+            })
+
     context = {
         'total_decisions': total_decisions,
         'decisions_24h': decisions_24h,
@@ -76,6 +94,7 @@ def dashboard_home(request):
         'recent_decisions': recent_decisions,
         'performance_by_tf': performance_by_tf,
         'top_symbols': top_symbols,
+        'symbol_performance': symbol_performance,
     }
 
     return render(request, 'dashboard/home.html', context)
@@ -133,12 +152,19 @@ def feature_analysis(request):
                 created_at__gte=timezone.now() - timedelta(days=30)
             ).distinct()
 
+            # Get latest raw value
+            latest_contribution = contributions.order_by('-decision__created_at').first()
+            latest_value = latest_contribution.raw_value if latest_contribution else None
+            latest_explanation = latest_contribution.explanation if latest_contribution else None
+
             feature_stats.append({
                 'feature': feature,
                 'power': round(power, 4),
                 'effect': effect,
                 'effect_strength': round(effect_strength, 1),
                 'avg_contribution': round(avg_contribution, 4),
+                'latest_value': latest_value,
+                'latest_explanation': latest_explanation,
                 'usage_count': total_count,
                 'decisions_count': decisions_with_feature.count(),
                 'positive_count': positive_count,
@@ -657,3 +683,179 @@ def api_symbol_performance(request, symbol):
         'decisions': decision_data,
         'prices': price_data,
     })
+
+
+def api_run_analysis(request):
+    """
+    API endpoint to trigger analysis
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+    # Get parameters
+    symbols = request.POST.getlist('symbols[]')
+    timeframes = request.POST.getlist('timeframes[]')
+    market_types = request.POST.getlist('market_types[]')
+
+    # Default values if not provided
+    if not symbols:
+        symbols = ['BTCUSDT', 'XAUUSD']
+    if not timeframes:
+        timeframes = ['1h', '4h', '1d']
+    if not market_types:
+        market_types = ['SPOT']
+
+    # Import here to avoid circular imports
+    from oracle.providers import BinanceProvider, YFinanceProvider, MacroDataProvider
+    from oracle.providers.news_provider import NewsSentimentProvider
+    from oracle.engine import DecisionEngine
+    import logging
+
+    logger = logging.getLogger(__name__)
+
+    # Get database objects
+    symbol_objects = Symbol.objects.filter(symbol__in=symbols, is_active=True)
+    if not symbol_objects.exists():
+        return JsonResponse({'error': 'No active symbols found'}, status=400)
+
+    timeframe_objects = Timeframe.objects.filter(name__in=timeframes)
+    if not timeframe_objects.exists():
+        return JsonResponse({'error': 'No timeframes found'}, status=400)
+
+    market_type_objects = MarketType.objects.filter(name__in=market_types)
+    if not market_type_objects.exists():
+        return JsonResponse({'error': 'No market types found'}, status=400)
+
+    try:
+        # Initialize providers
+        crypto_provider = BinanceProvider()
+        traditional_provider = YFinanceProvider()
+        macro_provider = MacroDataProvider()
+        news_provider = NewsSentimentProvider()
+
+        # Fetch macro data
+        logger.info("Fetching macro data...")
+        try:
+            macro_context = macro_provider.fetch_all_macro_indicators()
+        except Exception as e:
+            logger.warning(f"Error fetching macro data: {e}")
+            macro_context = {}
+
+        # Fetch intermarket data
+        logger.info("Fetching intermarket data...")
+        intermarket_context = {}
+        intermarket_symbols = ['XAGUSD', 'COPPER', 'CRUDE', 'GLD', 'GDX']
+        for sym in intermarket_symbols:
+            try:
+                df = traditional_provider.fetch_ohlcv(symbol=sym, timeframe='1d', limit=100)
+                if not df.empty:
+                    intermarket_context[sym] = df
+            except Exception as e:
+                logger.warning(f"Error fetching {sym}: {e}")
+
+        # Fetch news sentiment
+        logger.info("Fetching news sentiment...")
+        try:
+            sentiment_data = news_provider.fetch_sentiment(lookback_hours=24)
+        except Exception as e:
+            logger.warning(f"Error fetching news sentiment: {e}")
+            sentiment_data = {'fear_index': 0.0, 'count': 0, 'urgency': 0.0}
+
+        decisions_created = 0
+        errors = []
+
+        # Analyze each symbol
+        for symbol in symbol_objects:
+            # Determine provider
+            if symbol.asset_type == 'CRYPTO':
+                provider = crypto_provider
+                provider_symbol = f"{symbol.base_currency}/{symbol.quote_currency}"
+            else:
+                provider = traditional_provider
+                provider_symbol = symbol.symbol
+
+            for market_type in market_type_objects:
+                for timeframe in timeframe_objects:
+                    try:
+                        # Fetch market data
+                        df = provider.fetch_ohlcv(
+                            symbol=provider_symbol,
+                            timeframe=timeframe.name,
+                            limit=500
+                        )
+
+                        if df.empty:
+                            continue
+
+                        # Build context
+                        context = {
+                            'macro': macro_context,
+                            'intermarket': intermarket_context,
+                            'sentiment': sentiment_data
+                        }
+
+                        # Add derivatives data if applicable
+                        if market_type.name in ['PERPETUAL', 'FUTURES'] and symbol.asset_type == 'CRYPTO':
+                            try:
+                                funding = provider.fetch_funding_rate(provider_symbol)
+                                oi = provider.fetch_open_interest(provider_symbol)
+
+                                import pandas as pd
+                                context['derivatives'] = {
+                                    'funding_rate': pd.DataFrame([{
+                                        'timestamp': funding['next_funding_time'] or timezone.now(),
+                                        'rate': funding['rate']
+                                    }]),
+                                    'open_interest': pd.DataFrame([{
+                                        'timestamp': oi['timestamp'],
+                                        'value': oi['open_interest']
+                                    }]),
+                                    'mark_price': funding.get('mark_price'),
+                                    'index_price': funding.get('index_price'),
+                                }
+                            except Exception as e:
+                                logger.warning(f"Error fetching derivatives: {e}")
+
+                        # Run decision engine
+                        engine = DecisionEngine(
+                            symbol=symbol.symbol,
+                            market_type=market_type.name,
+                            timeframe=timeframe.name
+                        )
+
+                        decision_output = engine.generate_decision(df, context)
+
+                        # Save decision
+                        decision = Decision.objects.create(
+                            symbol=symbol,
+                            market_type=market_type,
+                            timeframe=timeframe,
+                            signal=decision_output.signal,
+                            bias=decision_output.bias,
+                            confidence=decision_output.confidence,
+                            entry_price=decision_output.entry_price,
+                            stop_loss=decision_output.stop_loss,
+                            take_profit=decision_output.take_profit,
+                            risk_reward=decision_output.risk_reward,
+                            invalidation_conditions=decision_output.invalidation_conditions,
+                            top_drivers=[d for d in decision_output.top_drivers],
+                            raw_score=decision_output.raw_score,
+                            regime_context=decision_output.regime_context
+                        )
+
+                        decisions_created += 1
+
+                    except Exception as e:
+                        error_msg = f'Error analyzing {symbol.symbol} {market_type.name} {timeframe.name}: {str(e)}'
+                        logger.error(error_msg)
+                        errors.append(error_msg)
+
+        return JsonResponse({
+            'success': True,
+            'decisions_created': decisions_created,
+            'errors': errors
+        })
+
+    except Exception as e:
+        logger.exception("Error running analysis")
+        return JsonResponse({'error': str(e)}, status=500)

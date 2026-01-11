@@ -4,9 +4,20 @@
 
 {% block content %}
 <!-- Page Header -->
-<div class="mb-6">
-    <h2 class="text-3xl font-bold text-gray-900">Dashboard Overview</h2>
-    <p class="mt-1 text-sm text-gray-600">Real-time system performance and statistics</p>
+<div class="mb-6 flex justify-between items-center">
+    <div>
+        <h2 class="text-3xl font-bold text-gray-900">Dashboard Overview</h2>
+        <p class="mt-1 text-sm text-gray-600">Real-time system performance and statistics</p>
+    </div>
+    <div>
+        <button
+            id="run-analysis-btn"
+            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        >
+            <i class="fas fa-play mr-2"></i>
+            Run Analysis
+        </button>
+    </div>
 </div>
 
 <!-- Key Metrics Cards -->
@@ -203,6 +214,68 @@
     </div>
 </div>
 
+<!-- Symbol Performance & ROI -->
+{% if symbol_performance %}
+<div class="bg-white shadow rounded-lg mb-8">
+    <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-900">
+            <i class="fas fa-chart-line mr-2 text-green-600"></i>
+            Symbol Performance & ROI
+        </h3>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Symbol</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">1H ROI</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">1D ROI</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">1W ROI</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">1M ROI</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">1Y ROI</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">24h Vol</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for perf in symbol_performance %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {{ perf.symbol }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-xs">
+                        <span class="px-2 py-1 bg-gray-100 text-gray-800 rounded">{{ perf.asset_type }}</span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                        ${{ perf.current_price|floatformat:2 }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm {% if perf.roi_1h > 0 %}text-green-600{% elif perf.roi_1h < 0 %}text-red-600{% else %}text-gray-600{% endif %}">
+                        {% if perf.roi_1h %}{{ perf.roi_1h|floatformat:2 }}%{% else %}N/A{% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm {% if perf.roi_1d > 0 %}text-green-600{% elif perf.roi_1d < 0 %}text-red-600{% else %}text-gray-600{% endif %}">
+                        {% if perf.roi_1d %}{{ perf.roi_1d|floatformat:2 }}%{% else %}N/A{% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm {% if perf.roi_1w > 0 %}text-green-600{% elif perf.roi_1w < 0 %}text-red-600{% else %}text-gray-600{% endif %}">
+                        {% if perf.roi_1w %}{{ perf.roi_1w|floatformat:2 }}%{% else %}N/A{% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm {% if perf.roi_1m > 0 %}text-green-600{% elif perf.roi_1m < 0 %}text-red-600{% else %}text-gray-600{% endif %}">
+                        {% if perf.roi_1m %}{{ perf.roi_1m|floatformat:2 }}%{% else %}N/A{% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm {% if perf.roi_1y > 0 %}text-green-600{% elif perf.roi_1y < 0 %}text-red-600{% else %}text-gray-600{% endif %}">
+                        {% if perf.roi_1y %}{{ perf.roi_1y|floatformat:2 }}%{% else %}N/A{% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                        {% if perf.volume_24h %}{{ perf.volume_24h|floatformat:0 }}{% else %}N/A{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
 <!-- Recent Decisions -->
 <div class="bg-white shadow rounded-lg">
     <div class="px-6 py-4 border-b border-gray-200">
@@ -383,5 +456,52 @@
                 }
             });
         });
+
+    // Run Analysis Button Handler
+    document.getElementById('run-analysis-btn').addEventListener('click', async function() {
+        const button = this;
+        const originalText = button.innerHTML;
+
+        // Disable button and show loading state
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Running Analysis...';
+
+        try {
+            // Get CSRF token
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}';
+
+            const response = await fetch('{% url "dashboard:api_run_analysis" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrfToken
+                },
+                body: new URLSearchParams({
+                    'symbols[]': ['BTCUSDT', 'XAUUSD'],
+                    'timeframes[]': ['1h', '4h', '1d'],
+                    'market_types[]': ['SPOT']
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Show success message
+                alert(`Analysis complete!\nDecisions created: ${data.decisions_created}\nErrors: ${data.errors.length}`);
+
+                // Reload page to show new data
+                location.reload();
+            } else {
+                alert(`Error: ${data.error || 'Unknown error'}`);
+            }
+        } catch (error) {
+            console.error('Error running analysis:', error);
+            alert(`Error running analysis: ${error.message}`);
+        } finally {
+            // Re-enable button
+            button.disabled = false;
+            button.innerHTML = originalText;
+        }
+    });
 </script>
 {% endblock %}

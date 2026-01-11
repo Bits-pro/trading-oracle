@@ -561,6 +561,181 @@ class VolumeRatioFeature(BaseFeature):
         )
 
 
+class SMAFeature(BaseFeature):
+    """Simple Moving Average"""
+    category = 'TECHNICAL'
+
+    def get_default_params(self) -> Dict[str, Any]:
+        return {'period': 20}
+
+    def calculate(self, df: pd.DataFrame, symbol: str, timeframe: str,
+                  market_type: str, context: Optional[Dict] = None) -> FeatureResult:
+        period = self.params.get('period', 20)
+
+        sma = df['close'].rolling(window=period).mean()
+        current_price = df['close'].iloc[-1]
+        current_sma = sma.iloc[-1]
+
+        # Distance from SMA
+        distance_pct = ((current_price - current_sma) / current_sma) * 100
+
+        # Direction based on price position relative to SMA
+        if distance_pct > 2:
+            direction = 1  # Price well above SMA - bullish
+            strength = min(1.0, abs(distance_pct) / 5)
+            explanation = f"Price {distance_pct:.2f}% above SMA({period}) - bullish"
+        elif distance_pct < -2:
+            direction = -1  # Price well below SMA - bearish
+            strength = min(1.0, abs(distance_pct) / 5)
+            explanation = f"Price {distance_pct:.2f}% below SMA({period}) - bearish"
+        else:
+            direction = 0
+            strength = 0.3
+            explanation = f"Price near SMA({period})"
+
+        return FeatureResult(
+            name=f'SMA{period}',
+            category=self.category,
+            raw_value=float(current_sma),
+            direction=direction,
+            strength=strength,
+            explanation=explanation,
+            metadata={'period': period, 'distance_pct': float(distance_pct)}
+        )
+
+
+class MACrossoverFeature(BaseFeature):
+    """Moving Average Crossover (Golden/Death Cross)"""
+    category = 'TECHNICAL'
+
+    def get_default_params(self) -> Dict[str, Any]:
+        return {'fast_period': 50, 'slow_period': 200}
+
+    def calculate(self, df: pd.DataFrame, symbol: str, timeframe: str,
+                  market_type: str, context: Optional[Dict] = None) -> FeatureResult:
+        fast_period = self.params.get('fast_period', 50)
+        slow_period = self.params.get('slow_period', 200)
+
+        # Need enough data
+        if len(df) < slow_period + 1:
+            return FeatureResult(
+                name=f'MACross{fast_period}_{slow_period}',
+                category=self.category,
+                raw_value=0.0,
+                direction=0,
+                strength=0.0,
+                explanation="Insufficient data for MA crossover"
+            )
+
+        fast_ma = df['close'].rolling(window=fast_period).mean()
+        slow_ma = df['close'].rolling(window=slow_period).mean()
+
+        current_fast = fast_ma.iloc[-1]
+        current_slow = slow_ma.iloc[-1]
+        prev_fast = fast_ma.iloc[-2]
+        prev_slow = slow_ma.iloc[-2]
+
+        # Calculate distance between MAs
+        distance_pct = ((current_fast - current_slow) / current_slow) * 100
+
+        # Detect crossovers
+        golden_cross = (prev_fast <= prev_slow) and (current_fast > current_slow)
+        death_cross = (prev_fast >= prev_slow) and (current_fast < current_slow)
+
+        if golden_cross:
+            direction = 1
+            strength = 1.0
+            explanation = f"Golden Cross! MA{fast_period} crossed above MA{slow_period} - strong bullish"
+        elif death_cross:
+            direction = -1
+            strength = 1.0
+            explanation = f"Death Cross! MA{fast_period} crossed below MA{slow_period} - strong bearish"
+        elif current_fast > current_slow:
+            direction = 1
+            strength = min(1.0, abs(distance_pct) / 5)
+            explanation = f"MA{fast_period} above MA{slow_period} ({distance_pct:+.2f}%) - bullish"
+        elif current_fast < current_slow:
+            direction = -1
+            strength = min(1.0, abs(distance_pct) / 5)
+            explanation = f"MA{fast_period} below MA{slow_period} ({distance_pct:+.2f}%) - bearish"
+        else:
+            direction = 0
+            strength = 0.2
+            explanation = f"MAs aligned"
+
+        return FeatureResult(
+            name=f'MACross{fast_period}_{slow_period}',
+            category=self.category,
+            raw_value=float(distance_pct),
+            direction=direction,
+            strength=strength,
+            explanation=explanation,
+            metadata={
+                'fast_period': fast_period,
+                'slow_period': slow_period,
+                'golden_cross': golden_cross,
+                'death_cross': death_cross
+            }
+        )
+
+
+class PriceMomentumFeature(BaseFeature):
+    """Rate of change in price over multiple periods"""
+    category = 'TECHNICAL'
+
+    def get_default_params(self) -> Dict[str, Any]:
+        return {'periods': [5, 10, 20]}
+
+    def calculate(self, df: pd.DataFrame, symbol: str, timeframe: str,
+                  market_type: str, context: Optional[Dict] = None) -> FeatureResult:
+        periods = self.params.get('periods', [5, 10, 20])
+
+        current_price = df['close'].iloc[-1]
+        momentum_scores = []
+
+        for period in periods:
+            if len(df) > period:
+                past_price = df['close'].iloc[-(period + 1)]
+                change_pct = ((current_price - past_price) / past_price) * 100
+                momentum_scores.append(change_pct)
+
+        if not momentum_scores:
+            return FeatureResult(
+                name='PriceMomentum',
+                category=self.category,
+                raw_value=0.0,
+                direction=0,
+                strength=0.0,
+                explanation="Insufficient data"
+            )
+
+        avg_momentum = np.mean(momentum_scores)
+
+        # Direction based on average momentum
+        if avg_momentum > 2:
+            direction = 1
+            strength = min(1.0, abs(avg_momentum) / 10)
+            explanation = f"Strong upward momentum (+{avg_momentum:.2f}%)"
+        elif avg_momentum < -2:
+            direction = -1
+            strength = min(1.0, abs(avg_momentum) / 10)
+            explanation = f"Strong downward momentum ({avg_momentum:.2f}%)"
+        else:
+            direction = 0
+            strength = 0.3
+            explanation = f"Weak momentum ({avg_momentum:+.2f}%)"
+
+        return FeatureResult(
+            name='PriceMomentum',
+            category=self.category,
+            raw_value=float(avg_momentum),
+            direction=direction,
+            strength=strength,
+            explanation=explanation,
+            metadata={'momentum_scores': [float(x) for x in momentum_scores]}
+        )
+
+
 # Register all technical features
 registry.register('RSI', RSIFeature)
 registry.register('MACD', MACDFeature)
@@ -570,6 +745,9 @@ registry.register('BBWidth', BollingerBandWidthFeature)
 registry.register('ATR', ATRFeature)
 registry.register('ADX', ADXFeature)
 registry.register('EMA', EMAFeature)
+registry.register('SMA', SMAFeature)
+registry.register('MACrossover', MACrossoverFeature)
+registry.register('PriceMomentum', PriceMomentumFeature)
 registry.register('Supertrend', SupertrendFeature)
 registry.register('VWAP', VWAPFeature)
 registry.register('VolumeRatio', VolumeRatioFeature)

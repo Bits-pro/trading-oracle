@@ -22,4 +22,5 @@ urlpatterns = [
     path('api/live-updates/', views.api_live_updates, name='api_live_updates'),
     path('api/live-market-data/', views.api_live_market_data, name='api_live_market_data'),
     path('api/symbol/<str:symbol>/', views.api_symbol_performance, name='api_symbol_performance'),
+    path('api/run-analysis/', views.api_run_analysis, name='api_run_analysis'),
 ]
