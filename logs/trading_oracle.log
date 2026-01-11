@@ -249,3 +249,531 @@ ERROR 2026-01-11 04:58:54,882 base Failed to get ticker 'TIP' reason: Expecting 
 ERROR 2026-01-11 04:58:54,883 base TIP: No timezone found, symbol may be delisted
 ERROR 2026-01-11 04:58:56,075 base Failed to get ticker '^GSPC' reason: Expecting value: line 1 column 1 (char 0)
 ERROR 2026-01-11 04:58:56,076 base ^GSPC: No timezone found, symbol may be delisted
+INFO 2026-01-11 05:46:38,737 autoreload Watching for file changes with StatReloader
+INFO 2026-01-11 05:46:45,155 basehttp "GET / HTTP/1.1" 302 0
+INFO 2026-01-11 05:46:45,194 basehttp "GET /dashboard/ HTTP/1.1" 200 27256
+INFO 2026-01-11 05:46:45,567 basehttp "GET /dashboard/api/chart/decisions/?days=30 HTTP/1.1" 200 75
+INFO 2026-01-11 05:46:45,570 basehttp "GET /dashboard/api/chart/confidence/?days=30 HTTP/1.1" 200 100
+INFO 2026-01-11 05:46:58,044 basehttp "GET /dashboard/features/ HTTP/1.1" 200 12195
+INFO 2026-01-11 05:46:58,145 basehttp "GET /dashboard/api/chart/feature-power/?limit=15&days=30 HTTP/1.1" 200 216
+INFO 2026-01-11 05:47:12,143 basehttp "GET /dashboard/history/ HTTP/1.1" 200 24285
+INFO 2026-01-11 05:47:19,689 basehttp "GET /dashboard/live/ HTTP/1.1" 200 27236
+INFO 2026-01-11 05:47:50,182 basehttp "GET /dashboard/api/live-updates/?last_id=4 HTTP/1.1" 200 33
+INFO 2026-01-11 05:48:20,186 basehttp "GET /dashboard/api/live-updates/?last_id=4 HTTP/1.1" 200 33
+INFO 2026-01-11 05:48:50,180 basehttp "GET /dashboard/api/live-updates/?last_id=4 HTTP/1.1" 200 33
+INFO 2026-01-11 05:49:20,190 basehttp "GET /dashboard/api/live-updates/?last_id=4 HTTP/1.1" 200 33
+INFO 2026-01-11 05:49:50,185 basehttp "GET /dashboard/api/live-updates/?last_id=4 HTTP/1.1" 200 33
+INFO 2026-01-11 05:50:20,186 basehttp "GET /dashboard/api/live-updates/?last_id=4 HTTP/1.1" 200 33
+INFO 2026-01-11 05:51:13,203 basehttp "GET /dashboard/api/live-updates/?last_id=4 HTTP/1.1" 200 33
+INFO 2026-01-11 05:53:12,062 autoreload Watching for file changes with StatReloader
+INFO 2026-01-11 05:53:13,203 basehttp "GET /dashboard/api/live-updates/?last_id=4 HTTP/1.1" 200 33
+INFO 2026-01-11 05:53:18,720 basehttp "GET /dashboard/live/ HTTP/1.1" 200 27237
+INFO 2026-01-11 05:53:31,290 basehttp "GET / HTTP/1.1" 302 0
+INFO 2026-01-11 05:53:31,325 basehttp "GET /dashboard/ HTTP/1.1" 200 27256
+INFO 2026-01-11 05:53:31,511 basehttp "GET /dashboard/api/chart/decisions/?days=30 HTTP/1.1" 200 75
+INFO 2026-01-11 05:53:31,513 basehttp "GET /dashboard/api/chart/confidence/?days=30 HTTP/1.1" 200 100
+INFO 2026-01-11 05:53:42,042 basehttp "GET /api/ HTTP/1.1" 200 6206
+INFO 2026-01-11 05:53:42,064 basehttp "GET /static/rest_framework/css/bootstrap-tweaks.css HTTP/1.1" 304 0
+INFO 2026-01-11 05:53:42,064 basehttp "GET /static/rest_framework/css/default.css HTTP/1.1" 304 0
+INFO 2026-01-11 05:53:42,065 basehttp "GET /static/rest_framework/css/bootstrap.min.css HTTP/1.1" 304 0
+INFO 2026-01-11 05:53:42,068 basehttp "GET /static/rest_framework/css/prettify.css HTTP/1.1" 304 0
+INFO 2026-01-11 05:53:42,070 basehttp "GET /static/rest_framework/js/jquery-3.7.1.min.js HTTP/1.1" 304 0
+INFO 2026-01-11 05:53:42,070 basehttp "GET /static/rest_framework/js/csrf.js HTTP/1.1" 304 0
+INFO 2026-01-11 05:53:42,072 basehttp "GET /static/rest_framework/js/bootstrap.min.js HTTP/1.1" 304 0
+INFO 2026-01-11 05:53:42,073 basehttp "GET /static/rest_framework/js/ajax-form.js HTTP/1.1" 304 0
+INFO 2026-01-11 05:53:42,073 basehttp "GET /static/rest_framework/js/default.js HTTP/1.1" 304 0
+INFO 2026-01-11 05:53:42,073 basehttp "GET /static/rest_framework/js/prettify-min.js HTTP/1.1" 304 0
+INFO 2026-01-11 05:53:42,074 basehttp "GET /static/rest_framework/js/load-ajax-form.js HTTP/1.1" 304 0
+INFO 2026-01-11 05:53:42,087 basehttp "GET /static/rest_framework/img/grid.png HTTP/1.1" 304 0
+INFO 2026-01-11 05:53:52,566 basehttp "GET /dashboard/history/ HTTP/1.1" 200 24285
+INFO 2026-01-11 05:53:55,736 basehttp "GET /dashboard/ HTTP/1.1" 200 27256
+INFO 2026-01-11 05:53:55,827 basehttp "GET /dashboard/api/chart/decisions/?days=30 HTTP/1.1" 200 75
+INFO 2026-01-11 05:53:55,831 basehttp "GET /dashboard/api/chart/confidence/?days=30 HTTP/1.1" 200 100
+INFO 2026-01-11 06:00:33,472 basehttp "GET / HTTP/1.1" 302 0
+INFO 2026-01-11 06:00:33,505 basehttp - Broken pipe from ('127.0.0.1', 51858)
+INFO 2026-01-11 06:00:33,719 basehttp "GET / HTTP/1.1" 302 0
+INFO 2026-01-11 06:00:33,739 basehttp "GET /dashboard/ HTTP/1.1" 200 27256
+INFO 2026-01-11 06:00:33,922 basehttp "GET /dashboard/api/chart/decisions/?days=30 HTTP/1.1" 200 75
+INFO 2026-01-11 06:00:33,927 basehttp "GET /dashboard/api/chart/confidence/?days=30 HTTP/1.1" 200 100
+INFO 2026-01-11 06:00:51,349 basehttp "GET /dashboard/ HTTP/1.1" 200 27256
+INFO 2026-01-11 06:00:51,466 basehttp "GET /dashboard/api/chart/decisions/?days=30 HTTP/1.1" 200 75
+INFO 2026-01-11 06:00:51,467 basehttp "GET /dashboard/api/chart/confidence/?days=30 HTTP/1.1" 200 100
+INFO 2026-01-11 06:01:44,493 autoreload Watching for file changes with StatReloader
+ERROR 2026-01-11 06:02:07,601 base Failed to get ticker 'PAXGUSDT' reason: Expecting value: line 1 column 1 (char 0)
+ERROR 2026-01-11 06:02:07,608 base PAXGUSDT: No timezone found, symbol may be delisted
+ERROR 2026-01-11 06:02:09,543 base Failed to get ticker 'GC=F' reason: Expecting value: line 1 column 1 (char 0)
+ERROR 2026-01-11 06:02:09,544 base GC=F: No timezone found, symbol may be delisted
+INFO 2026-01-11 06:02:09,944 basehttp "GET /dashboard/live/ HTTP/1.1" 200 32665
+INFO 2026-01-11 06:02:40,109 basehttp "GET /dashboard/api/live-updates/?last_id=4 HTTP/1.1" 200 33
+INFO 2026-01-11 06:03:17,139 basehttp "GET /dashboard/api/live-updates/?last_id=4 HTTP/1.1" 200 33
+INFO 2026-01-11 06:03:26,984 basehttp "GET /dashboard/api/live-updates/?last_id=4 HTTP/1.1" 200 33
+INFO 2026-01-11 06:03:36,959 basehttp "GET /dashboard/api/live-updates/?last_id=4 HTTP/1.1" 200 33
+INFO 2026-01-11 06:03:46,962 basehttp "GET /dashboard/api/live-updates/?last_id=4 HTTP/1.1" 200 33
+ERROR 2026-01-11 06:03:50,896 base Failed to get ticker 'PAXGUSDT' reason: Expecting value: line 1 column 1 (char 0)
+ERROR 2026-01-11 06:03:50,906 base PAXGUSDT: No timezone found, symbol may be delisted
+ERROR 2026-01-11 06:03:51,219 base Failed to get ticker 'GC=F' reason: Expecting value: line 1 column 1 (char 0)
+ERROR 2026-01-11 06:03:51,220 base GC=F: No timezone found, symbol may be delisted
+INFO 2026-01-11 06:03:51,581 basehttp "GET /dashboard/live/ HTTP/1.1" 200 32665
+INFO 2026-01-11 06:04:21,727 basehttp "GET /dashboard/api/live-updates/?last_id=4 HTTP/1.1" 200 33
+ERROR 2026-01-11 06:04:33,136 base Failed to get ticker 'PAXGUSDT' reason: Expecting value: line 1 column 1 (char 0)
+ERROR 2026-01-11 06:04:33,148 base PAXGUSDT: No timezone found, symbol may be delisted
+ERROR 2026-01-11 06:04:33,542 base Failed to get ticker 'GC=F' reason: Expecting value: line 1 column 1 (char 0)
+ERROR 2026-01-11 06:04:33,543 base GC=F: No timezone found, symbol may be delisted
+INFO 2026-01-11 06:04:33,897 basehttp "GET /dashboard/live/ HTTP/1.1" 200 32665
+INFO 2026-01-11 06:05:07,195 basehttp "GET / HTTP/1.1" 302 0
+INFO 2026-01-11 06:05:07,235 basehttp "GET /dashboard/ HTTP/1.1" 200 27256
+INFO 2026-01-11 06:05:07,429 basehttp "GET /dashboard/api/chart/decisions/?days=30 HTTP/1.1" 200 75
+INFO 2026-01-11 06:05:07,432 basehttp "GET /dashboard/api/chart/confidence/?days=30 HTTP/1.1" 200 100
+ERROR 2026-01-11 06:05:14,635 base Failed to get ticker 'PAXGUSDT' reason: Expecting value: line 1 column 1 (char 0)
+ERROR 2026-01-11 06:05:14,642 base PAXGUSDT: No timezone found, symbol may be delisted
+ERROR 2026-01-11 06:05:14,954 base Failed to get ticker 'GC=F' reason: Expecting value: line 1 column 1 (char 0)
+ERROR 2026-01-11 06:05:14,955 base GC=F: No timezone found, symbol may be delisted
+INFO 2026-01-11 06:05:15,291 basehttp "GET /dashboard/live/ HTTP/1.1" 200 32665
+INFO 2026-01-11 06:05:46,166 basehttp "GET /dashboard/api/live-updates/?last_id=4 HTTP/1.1" 200 33
+INFO 2026-01-11 06:06:16,156 basehttp "GET /dashboard/api/live-updates/?last_id=4 HTTP/1.1" 200 33
+INFO 2026-01-11 06:06:46,150 basehttp "GET /dashboard/api/live-updates/?last_id=4 HTTP/1.1" 200 33
+INFO 2026-01-11 06:07:16,159 basehttp "GET /dashboard/api/live-updates/?last_id=4 HTTP/1.1" 200 33
+INFO 2026-01-11 06:07:46,186 basehttp "GET /dashboard/api/live-updates/?last_id=4 HTTP/1.1" 200 33
+INFO 2026-01-11 06:08:16,150 basehttp "GET /dashboard/api/live-updates/?last_id=4 HTTP/1.1" 200 33
+INFO 2026-01-11 06:09:13,159 basehttp "GET /dashboard/api/live-updates/?last_id=4 HTTP/1.1" 200 33
+INFO 2026-01-11 06:10:13,151 basehttp "GET /dashboard/api/live-updates/?last_id=4 HTTP/1.1" 200 33
+INFO 2026-01-11 06:11:13,152 basehttp "GET /dashboard/api/live-updates/?last_id=4 HTTP/1.1" 200 33
+INFO 2026-01-11 06:12:13,164 basehttp "GET /dashboard/api/live-updates/?last_id=4 HTTP/1.1" 200 33
+INFO 2026-01-11 06:13:13,153 basehttp "GET /dashboard/api/live-updates/?last_id=4 HTTP/1.1" 200 33
+INFO 2026-01-11 06:14:13,157 basehttp "GET /dashboard/api/live-updates/?last_id=4 HTTP/1.1" 200 33
+INFO 2026-01-11 06:14:42,464 basehttp "GET /dashboard/api/live-updates/?last_id=4 HTTP/1.1" 200 33
+INFO 2026-01-11 06:16:30,987 autoreload Watching for file changes with StatReloader
+INFO 2026-01-11 06:16:40,721 basehttp "GET / HTTP/1.1" 302 0
+INFO 2026-01-11 06:16:40,772 basehttp "GET /dashboard/ HTTP/1.1" 200 27256
+INFO 2026-01-11 06:16:40,936 basehttp "GET /dashboard/api/chart/decisions/?days=30 HTTP/1.1" 200 75
+INFO 2026-01-11 06:16:40,939 basehttp "GET /dashboard/api/chart/confidence/?days=30 HTTP/1.1" 200 100
+ERROR 2026-01-11 06:16:51,618 log Internal Server Error: /dashboard/live/
+Traceback (most recent call last):
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/defaulttags.py", line 1035, in find_library
+    return parser.libraries[name]
+           ~~~~~~~~~~~~~~~~^^^^^^
+KeyError: 'humanize'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/trading_oracle/oracle/dashboard/views.py", line 332, in live_monitor
+    return render(request, 'dashboard/live.html', context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/backends/django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/loaders/cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/loaders/base.py", line 28, in get_template
+    return Template(
+           ^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/base.py", line 155, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/base.py", line 197, in compile_nodelist
+    nodelist = parser.parse()
+               ^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/base.py", line 519, in parse
+    raise self.error(token, e)
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/base.py", line 517, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/loader_tags.py", line 299, in do_extends
+    nodelist = parser.parse()
+               ^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/base.py", line 519, in parse
+    raise self.error(token, e)
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/base.py", line 517, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/defaulttags.py", line 1097, in load
+    lib = find_library(parser, name)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/defaulttags.py", line 1037, in find_library
+    raise TemplateSyntaxError(
+django.template.exceptions.TemplateSyntaxError: 'humanize' is not a registered tag library. Must be one of:
+admin_list
+admin_modify
+admin_urls
+cache
+dashboard_extras
+i18n
+l10n
+log
+rest_framework
+static
+tz
+ERROR 2026-01-11 06:16:51,622 basehttp "GET /dashboard/live/ HTTP/1.1" 500 232806
+ERROR 2026-01-11 06:39:06,839 log Internal Server Error: /dashboard/live/
+Traceback (most recent call last):
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/defaulttags.py", line 1035, in find_library
+    return parser.libraries[name]
+           ~~~~~~~~~~~~~~~~^^^^^^
+KeyError: 'humanize'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/trading_oracle/oracle/dashboard/views.py", line 332, in live_monitor
+    return render(request, 'dashboard/live.html', context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/backends/django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/loaders/cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/loaders/base.py", line 28, in get_template
+    return Template(
+           ^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/base.py", line 155, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/base.py", line 197, in compile_nodelist
+    nodelist = parser.parse()
+               ^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/base.py", line 519, in parse
+    raise self.error(token, e)
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/base.py", line 517, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/loader_tags.py", line 299, in do_extends
+    nodelist = parser.parse()
+               ^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/base.py", line 519, in parse
+    raise self.error(token, e)
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/base.py", line 517, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/defaulttags.py", line 1097, in load
+    lib = find_library(parser, name)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/defaulttags.py", line 1037, in find_library
+    raise TemplateSyntaxError(
+django.template.exceptions.TemplateSyntaxError: 'humanize' is not a registered tag library. Must be one of:
+admin_list
+admin_modify
+admin_urls
+cache
+dashboard_extras
+i18n
+l10n
+log
+rest_framework
+static
+tz
+ERROR 2026-01-11 06:39:06,846 basehttp "GET /dashboard/live/ HTTP/1.1" 500 232794
+INFO 2026-01-11 06:39:50,069 autoreload /Users/mac/Desktop/recent-projects/trading-oracle-project/trading_oracle/trading_oracle/settings.py changed, reloading.
+INFO 2026-01-11 06:39:50,620 autoreload Watching for file changes with StatReloader
+INFO 2026-01-11 06:40:38,347 autoreload /Users/mac/Desktop/recent-projects/trading-oracle-project/trading_oracle/trading_oracle/settings.py changed, reloading.
+INFO 2026-01-11 06:40:39,264 autoreload Watching for file changes with StatReloader
+INFO 2026-01-11 06:40:43,828 basehttp "GET / HTTP/1.1" 302 0
+INFO 2026-01-11 06:40:43,871 basehttp "GET /dashboard/ HTTP/1.1" 200 27256
+INFO 2026-01-11 06:40:43,956 basehttp "GET / HTTP/1.1" 302 0
+INFO 2026-01-11 06:40:43,971 basehttp "GET /dashboard/ HTTP/1.1" 200 27256
+INFO 2026-01-11 06:40:44,161 basehttp "GET /dashboard/api/chart/decisions/?days=30 HTTP/1.1" 200 75
+INFO 2026-01-11 06:40:44,164 basehttp "GET /dashboard/api/chart/confidence/?days=30 HTTP/1.1" 200 100
+INFO 2026-01-11 06:40:46,538 basehttp "GET /dashboard/live/ HTTP/1.1" 200 40382
+INFO 2026-01-11 06:40:46,656 basehttp "GET /dashboard/api/live-updates/?last_id=4 HTTP/1.1" 200 33
+INFO 2026-01-11 06:40:51,890 basehttp "GET /dashboard/live/ HTTP/1.1" 200 40382
+INFO 2026-01-11 06:40:51,984 basehttp "GET /dashboard/api/live-updates/?last_id=4 HTTP/1.1" 200 33
+ERROR 2026-01-11 06:40:55,161 base Failed to get ticker 'GC=F' reason: Expecting value: line 1 column 1 (char 0)
+ERROR 2026-01-11 06:40:55,172 base GC=F: No timezone found, symbol may be delisted
+INFO 2026-01-11 06:40:55,548 basehttp "GET /dashboard/api/live-market-data/?symbols=ADAUSDT,BNBUSDT,BTCUSDT,ETHUSDT,PAXGUSDT,SOLUSDT,XAUUSD,XRPUSDT HTTP/1.1" 200 869
+INFO 2026-01-11 06:40:55,548 basehttp - Broken pipe from ('127.0.0.1', 52046)
+ERROR 2026-01-11 06:40:58,057 base Failed to get ticker 'GC=F' reason: Expecting value: line 1 column 1 (char 0)
+ERROR 2026-01-11 06:40:58,059 base GC=F: No timezone found, symbol may be delisted
+INFO 2026-01-11 06:40:58,421 basehttp "GET /dashboard/api/live-market-data/?symbols=ADAUSDT,BNBUSDT,BTCUSDT,ETHUSDT,PAXGUSDT,SOLUSDT,XAUUSD,XRPUSDT HTTP/1.1" 200 869
+INFO 2026-01-11 06:41:22,022 basehttp "GET /dashboard/api/live-updates/?last_id=4 HTTP/1.1" 200 33
+ERROR 2026-01-11 06:41:29,049 base Failed to get ticker 'GC=F' reason: Expecting value: line 1 column 1 (char 0)
+ERROR 2026-01-11 06:41:29,051 base GC=F: No timezone found, symbol may be delisted
+INFO 2026-01-11 06:41:29,446 basehttp "GET /dashboard/api/live-market-data/?symbols=ADAUSDT,BNBUSDT,BTCUSDT,ETHUSDT,PAXGUSDT,SOLUSDT,XAUUSD,XRPUSDT HTTP/1.1" 200 869
+INFO 2026-01-11 06:41:52,011 basehttp "GET /dashboard/api/live-updates/?last_id=4 HTTP/1.1" 200 33
+ERROR 2026-01-11 06:41:58,092 base Failed to get ticker 'GC=F' reason: Expecting value: line 1 column 1 (char 0)
+ERROR 2026-01-11 06:41:58,093 base GC=F: No timezone found, symbol may be delisted
+INFO 2026-01-11 06:41:58,448 basehttp "GET /dashboard/api/live-market-data/?symbols=ADAUSDT,BNBUSDT,BTCUSDT,ETHUSDT,PAXGUSDT,SOLUSDT,XAUUSD,XRPUSDT HTTP/1.1" 200 869
+INFO 2026-01-11 06:42:22,011 basehttp "GET /dashboard/api/live-updates/?last_id=4 HTTP/1.1" 200 33
+ERROR 2026-01-11 06:42:24,095 log Internal Server Error: /dashboard/decision/4/
+Traceback (most recent call last):
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/trading_oracle/oracle/dashboard/views.py", line 388, in decision_detail
+    return render(request, 'dashboard/decision_detail.html', context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/backends/django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/loaders/cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/loaders/base.py", line 28, in get_template
+    return Template(
+           ^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/base.py", line 155, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/base.py", line 197, in compile_nodelist
+    nodelist = parser.parse()
+               ^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/base.py", line 519, in parse
+    raise self.error(token, e)
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/base.py", line 517, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/loader_tags.py", line 299, in do_extends
+    nodelist = parser.parse()
+               ^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/base.py", line 519, in parse
+    raise self.error(token, e)
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/base.py", line 517, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/base.py", line 519, in parse
+    raise self.error(token, e)
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/base.py", line 517, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/defaulttags.py", line 862, in do_for
+    nodelist_loop = parser.parse(
+                    ^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/base.py", line 490, in parse
+    raise self.error(token, e)
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/base.py", line 488, in parse
+    filter_expression = self.compile_filter(token.contents)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/base.py", line 610, in compile_filter
+    return FilterExpression(token, self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/base.py", line 706, in __init__
+    filter_func = parser.find_filter(filter_name)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/base.py", line 616, in find_filter
+    raise TemplateSyntaxError("Invalid filter: '%s'" % filter_name)
+django.template.exceptions.TemplateSyntaxError: Invalid filter: 'replace'
+ERROR 2026-01-11 06:42:24,099 basehttp "GET /dashboard/decision/4/ HTTP/1.1" 500 303959
+ERROR 2026-01-11 06:42:28,526 base Failed to get ticker 'GC=F' reason: Expecting value: line 1 column 1 (char 0)
+ERROR 2026-01-11 06:42:28,527 base GC=F: No timezone found, symbol may be delisted
+INFO 2026-01-11 06:42:28,885 basehttp "GET /dashboard/api/live-market-data/?symbols=ADAUSDT,BNBUSDT,BTCUSDT,ETHUSDT,PAXGUSDT,SOLUSDT,XAUUSD,XRPUSDT HTTP/1.1" 200 870
+ERROR 2026-01-11 06:46:40,042 log Internal Server Error: /dashboard/decision/4/
+Traceback (most recent call last):
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/trading_oracle/oracle/dashboard/views.py", line 388, in decision_detail
+    return render(request, 'dashboard/decision_detail.html', context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/backends/django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/loaders/cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/loaders/base.py", line 28, in get_template
+    return Template(
+           ^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/base.py", line 155, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/base.py", line 197, in compile_nodelist
+    nodelist = parser.parse()
+               ^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/base.py", line 519, in parse
+    raise self.error(token, e)
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/base.py", line 517, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/loader_tags.py", line 299, in do_extends
+    nodelist = parser.parse()
+               ^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/base.py", line 519, in parse
+    raise self.error(token, e)
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/base.py", line 517, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/base.py", line 519, in parse
+    raise self.error(token, e)
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/base.py", line 517, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/defaulttags.py", line 862, in do_for
+    nodelist_loop = parser.parse(
+                    ^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/base.py", line 490, in parse
+    raise self.error(token, e)
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/base.py", line 488, in parse
+    filter_expression = self.compile_filter(token.contents)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/base.py", line 610, in compile_filter
+    return FilterExpression(token, self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/base.py", line 711, in __init__
+    raise TemplateSyntaxError(
+django.template.exceptions.TemplateSyntaxError: Could not parse the remainder: ':" "' from 'key|title|cut:"_":" "'
+ERROR 2026-01-11 06:46:40,050 basehttp "GET /dashboard/decision/4/ HTTP/1.1" 500 295579
+ERROR 2026-01-11 06:47:16,499 log Internal Server Error: /dashboard/decision/4/
+Traceback (most recent call last):
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/trading_oracle/oracle/dashboard/views.py", line 388, in decision_detail
+    return render(request, 'dashboard/decision_detail.html', context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/backends/django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/loaders/cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/loaders/base.py", line 28, in get_template
+    return Template(
+           ^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/base.py", line 155, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/base.py", line 197, in compile_nodelist
+    nodelist = parser.parse()
+               ^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/base.py", line 519, in parse
+    raise self.error(token, e)
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/base.py", line 517, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/loader_tags.py", line 299, in do_extends
+    nodelist = parser.parse()
+               ^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/base.py", line 519, in parse
+    raise self.error(token, e)
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/base.py", line 517, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/base.py", line 519, in parse
+    raise self.error(token, e)
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/base.py", line 517, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/defaulttags.py", line 862, in do_for
+    nodelist_loop = parser.parse(
+                    ^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/base.py", line 490, in parse
+    raise self.error(token, e)
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/base.py", line 488, in parse
+    filter_expression = self.compile_filter(token.contents)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/base.py", line 610, in compile_filter
+    return FilterExpression(token, self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/base.py", line 706, in __init__
+    filter_func = parser.find_filter(filter_name)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mac/Desktop/recent-projects/trading-oracle-project/venv/lib/python3.11/site-packages/django/template/base.py", line 616, in find_filter
+    raise TemplateSyntaxError("Invalid filter: '%s'" % filter_name)
+django.template.exceptions.TemplateSyntaxError: Invalid filter: 'replace'
+ERROR 2026-01-11 06:47:16,502 basehttp "GET /dashboard/decision/4/ HTTP/1.1" 500 304096
