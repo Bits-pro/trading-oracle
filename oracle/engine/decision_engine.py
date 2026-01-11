@@ -304,7 +304,7 @@ class Layer2Rules:
             else:
                 self.regime_context['volatility'] = 'NORMAL'
 
-        if bbwidth_result and bbwidth_result.metadata.get('is_squeeze'):
+        if bbwidth_result and bbwidth_result.metadata.get('is_squeeze') == 'YES':
             self.regime_context['squeeze'] = 'YES'
 
     def _apply_filters(self, raw_score: float) -> float:

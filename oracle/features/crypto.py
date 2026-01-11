@@ -391,7 +391,7 @@ class OrderBookImbalanceFeature(BaseFeature):
                 direction=0,
                 strength=0.0,
                 explanation="Order book data not available",
-                metadata={'data_available': False}
+                metadata={'data_available': 'NO'}
             )
 
         orderbook = context['orderbook']

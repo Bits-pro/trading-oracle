@@ -251,7 +251,7 @@ class BollingerBandWidthFeature(BaseFeature):
             direction=direction,
             strength=strength,
             explanation=explanation,
-            metadata={'avg_width': float(avg_width), 'is_squeeze': is_squeeze}
+            metadata={'avg_width': float(avg_width), 'is_squeeze': 'YES' if is_squeeze else 'NO'}
         )
 
 
