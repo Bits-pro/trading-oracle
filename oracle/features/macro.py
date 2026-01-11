@@ -8,6 +8,15 @@ from typing import Dict, Any, Optional
 from .base import BaseFeature, FeatureResult, registry
 
 
+def _has_macro_series(context: Optional[Dict], key: str, min_rows: int = 5) -> bool:
+    if not context or 'macro' not in context:
+        return False
+    series = context['macro'].get(key)
+    if series is None or series.empty:
+        return False
+    return len(series) >= min_rows
+
+
 class DXYFeature(BaseFeature):
     """US Dollar Index - inverse correlation with gold and crypto"""
     category = 'MACRO'
@@ -15,7 +24,7 @@ class DXYFeature(BaseFeature):
     def calculate(self, df: pd.DataFrame, symbol: str, timeframe: str,
                   market_type: str, context: Optional[Dict] = None) -> FeatureResult:
         # DXY data should be in context['macro']['DXY']
-        if not context or 'macro' not in context or 'DXY' not in context['macro']:
+        if not _has_macro_series(context, 'DXY', min_rows=50):
             return FeatureResult(
                 name='DXY',
                 category=self.category,
@@ -65,7 +74,7 @@ class VIXFeature(BaseFeature):
 
     def calculate(self, df: pd.DataFrame, symbol: str, timeframe: str,
                   market_type: str, context: Optional[Dict] = None) -> FeatureResult:
-        if not context or 'macro' not in context or 'VIX' not in context['macro']:
+        if not _has_macro_series(context, 'VIX'):
             return FeatureResult(
                 name='VIX',
                 category=self.category,
@@ -133,10 +142,10 @@ class RealYieldsFeature(BaseFeature):
             )
 
         # Try to get real yields directly, or calculate from nominal - inflation
-        if 'REAL_YIELDS' in context['macro']:
+        if _has_macro_series(context, 'REAL_YIELDS', min_rows=10):
             real_yields_data = context['macro']['REAL_YIELDS']
             current_real_yield = real_yields_data['close'].iloc[-1]
-        elif 'TNX' in context['macro'] and 'INFLATION_EXP' in context['macro']:
+        elif _has_macro_series(context, 'TNX', min_rows=1) and _has_macro_series(context, 'INFLATION_EXP', min_rows=1):
             nominal_yield = context['macro']['TNX']['close'].iloc[-1]
             inflation_exp = context['macro']['INFLATION_EXP']['close'].iloc[-1]
             current_real_yield = nominal_yield - inflation_exp
@@ -151,7 +160,7 @@ class RealYieldsFeature(BaseFeature):
             )
 
         # Get historical context
-        if 'REAL_YIELDS' in context['macro']:
+        if _has_macro_series(context, 'REAL_YIELDS', min_rows=10):
             prev_real_yield = real_yields_data['close'].iloc[-10]
             change = current_real_yield - prev_real_yield
         else:

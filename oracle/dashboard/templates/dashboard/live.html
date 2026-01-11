@@ -1,4 +1,6 @@
 {% extends 'dashboard/base.html' %}
+{% load dashboard_extras %}
+{% load humanize %}
 
 {% block title %}Live Monitor - Trading Oracle{% endblock %}
 
@@ -60,30 +62,51 @@
             </span>
         </div>
 
-        {% if symbol.symbol in latest_market_data %}
-        <div class="space-y-2">
+        {% with data=latest_market_data|get_item:symbol.symbol %}
+        <div class="space-y-2" data-market-card="{{ symbol.symbol }}">
             <div class="flex justify-between">
                 <span class="text-sm text-gray-500">Price:</span>
-                <span class="text-sm font-semibold text-gray-900">
-                    ${{ latest_market_data|get_item:symbol.symbol|get_item:'close'|floatformat:2 }}
+                <span class="text-sm font-semibold text-gray-900" data-market-field="price" data-symbol="{{ symbol.symbol }}">
+                    {% if data %}
+                        ${{ data.close|format_number:2 }}
+                    {% else %}
+                        —
+                    {% endif %}
                 </span>
             </div>
             <div class="flex justify-between">
                 <span class="text-sm text-gray-500">Volume:</span>
-                <span class="text-sm font-semibold text-gray-900">
-                    {{ latest_market_data|get_item:symbol.symbol|get_item:'volume'|floatformat:0 }}
+                <span class="text-sm font-semibold text-gray-900" data-market-field="volume" data-symbol="{{ symbol.symbol }}">
+                    {% if data and data.volume is not None %}
+                        {{ data.volume|format_number:0 }}
+                    {% else %}
+                        —
+                    {% endif %}
                 </span>
             </div>
             <div class="flex justify-between">
                 <span class="text-sm text-gray-500">Updated:</span>
-                <span class="text-xs text-gray-500">
-                    {{ latest_market_data|get_item:symbol.symbol|get_item:'timestamp'|timesince }} ago
+                <span class="text-xs text-gray-500" data-market-field="updated" data-symbol="{{ symbol.symbol }}">
+                    {% if data and data.timestamp %}
+                        {{ data.timestamp|timesince }} ago
+                    {% else %}
+                        —
+                    {% endif %}
                 </span>
             </div>
+            <div class="text-xs text-gray-400" data-market-field="source" data-symbol="{{ symbol.symbol }}">
+                {% if data and data.source == 'decision' %}
+                    Source: last decision
+                {% elif data and data.source == 'provider' %}
+                    Source: live provider
+                {% elif data and data.source == 'market' %}
+                    Source: market data
+                {% else %}
+                    Source: —
+                {% endif %}
+            </div>
         </div>
-        {% else %}
-        <p class="text-sm text-gray-500">No market data available</p>
-        {% endif %}
+        {% endwith %}
     </div>
     {% endfor %}
 </div>
@@ -180,6 +203,7 @@
 
     function startAutoRefresh() {
         const intervalSeconds = document.querySelector('[x-model="interval"]').value;
+        checkForUpdates();
         autoRefreshInterval = setInterval(checkForUpdates, intervalSeconds * 1000);
     }
 
@@ -196,9 +220,11 @@
     }
 
     function checkForUpdates() {
-        fetch(`{% url 'dashboard:api_live_updates' %}?last_id=${lastDecisionId}`)
-            .then(response => response.json())
-            .then(data => {
+        Promise.all([
+            fetch(`{% url 'dashboard:api_live_updates' %}?last_id=${lastDecisionId}`).then(response => response.json()),
+            refreshMarketData()
+        ])
+            .then(([data]) => {
                 if (data.decisions.length > 0) {
                     // Prepend new decisions
                     const container = document.getElementById('decisions-container');
@@ -231,10 +257,94 @@
             .catch(error => console.error('Error fetching updates:', error));
     }
 
+    function formatNumber(value, decimals) {
+        if (value === null || value === undefined) {
+            return '—';
+        }
+        const formatter = new Intl.NumberFormat('fr-FR', {
+            minimumFractionDigits: decimals,
+            maximumFractionDigits: decimals
+        });
+        return formatter.format(value);
+    }
+
+    function formatRelativeTime(timestamp) {
+        if (!timestamp) {
+            return '—';
+        }
+        const date = new Date(timestamp);
+        const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+        if (seconds < 60) {
+            return `${seconds}s ago`;
+        }
+        const minutes = Math.floor(seconds / 60);
+        if (minutes < 60) {
+            return `${minutes}m ago`;
+        }
+        const hours = Math.floor(minutes / 60);
+        if (hours < 24) {
+            return `${hours}h ago`;
+        }
+        const days = Math.floor(hours / 24);
+        return `${days}d ago`;
+    }
+
+    function refreshMarketData() {
+        const symbols = Array.from(document.querySelectorAll('[data-market-card]'))
+            .map(el => el.getAttribute('data-market-card'))
+            .filter(Boolean);
+
+        if (symbols.length === 0) {
+            return Promise.resolve();
+        }
+
+        return fetch(`{% url 'dashboard:api_live_market_data' %}?symbols=${symbols.join(',')}`)
+            .then(response => response.json())
+            .then(payload => {
+                const data = payload.data || {};
+                Object.entries(data).forEach(([symbol, info]) => {
+                    const priceEl = document.querySelector(`[data-market-field="price"][data-symbol="${symbol}"]`);
+                    const volumeEl = document.querySelector(`[data-market-field="volume"][data-symbol="${symbol}"]`);
+                    const updatedEl = document.querySelector(`[data-market-field="updated"][data-symbol="${symbol}"]`);
+                    const sourceEl = document.querySelector(`[data-market-field="source"][data-symbol="${symbol}"]`);
+
+                    if (priceEl) {
+                        priceEl.textContent = info.close !== null && info.close !== undefined
+                            ? `$${formatNumber(info.close, 2)}`
+                            : '—';
+                    }
+                    if (volumeEl) {
+                        volumeEl.textContent = info.volume !== null && info.volume !== undefined
+                            ? formatNumber(info.volume, 0)
+                            : '—';
+                    }
+                    if (updatedEl) {
+                        updatedEl.textContent = formatRelativeTime(info.timestamp);
+                    }
+                    if (sourceEl) {
+                        let label = 'Source: —';
+                        if (info.source === 'decision') {
+                            label = 'Source: last decision';
+                        } else if (info.source === 'provider') {
+                            label = 'Source: live provider';
+                        } else if (info.source === 'market') {
+                            label = 'Source: market data';
+                        }
+                        sourceEl.textContent = label;
+                    }
+                });
+            })
+            .catch(error => console.error('Error fetching market data:', error));
+    }
+
     function createDecisionRow(decision) {
         const row = document.createElement('div');
         row.className = 'p-6 hover:bg-gray-50 transition-colors decision-row';
         row.setAttribute('data-decision-id', decision.id);
+
+        const formattedEntry = decision.entry_price
+            ? `$${formatNumber(parseFloat(decision.entry_price), 2)}`
+            : '';
 
         row.innerHTML = `
             <div class="flex items-center justify-between">
@@ -255,10 +365,10 @@
                                 </div>
                             </div>
                         </div>
-                        ${decision.entry_price ? `
+                        ${formattedEntry ? `
                         <div>
                             <span class="text-gray-500">Entry:</span>
-                            <p class="font-semibold text-gray-900 mt-1">$${parseFloat(decision.entry_price).toFixed(2)}</p>
+                            <p class="font-semibold text-gray-900 mt-1">${formattedEntry}</p>
                         </div>
                         ` : ''}
                     </div>

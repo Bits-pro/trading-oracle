@@ -20,10 +20,22 @@ class Command(BaseCommand):
             help='Symbols to analyze (space-separated)'
         )
         parser.add_argument(
+            '--symbol',
+            dest='single_symbols',
+            nargs='+',
+            help='Symbol(s) to analyze (alias for --symbols)'
+        )
+        parser.add_argument(
             '--timeframes',
             nargs='+',
             default=['1h', '4h', '1d'],
             help='Timeframes to analyze (space-separated)'
+        )
+        parser.add_argument(
+            '--timeframe',
+            dest='single_timeframes',
+            nargs='+',
+            help='Timeframe(s) to analyze (alias for --timeframes)'
         )
         parser.add_argument(
             '--market-types',
@@ -32,16 +44,22 @@ class Command(BaseCommand):
             help='Market types to analyze (space-separated)'
         )
         parser.add_argument(
+            '--skip-macro',
+            action='store_true',
+            help='Skip fetching macro indicators'
+        )
+        parser.add_argument(
             '--verbose',
             action='store_true',
             help='Show detailed output'
         )
 
     def handle(self, *args, **options):
-        symbols_input = options['symbols']
-        timeframes_input = options['timeframes']
+        symbols_input = options['single_symbols'] or options['symbols']
+        timeframes_input = options['single_timeframes'] or options['timeframes']
         market_types_input = options['market_types']
         verbose = options['verbose']
+        skip_macro = options['skip_macro']
 
         self.stdout.write(self.style.SUCCESS('Starting Trading Analysis'))
         self.stdout.write('='*60)
@@ -69,13 +87,17 @@ class Command(BaseCommand):
         macro_provider = MacroDataProvider()
 
         # Fetch macro data
-        self.stdout.write('Fetching macro data...')
-        try:
-            macro_context = macro_provider.fetch_all_macro_indicators()
-            self.stdout.write(self.style.SUCCESS(f'  ✓ Fetched {len(macro_context)} macro indicators'))
-        except Exception as e:
-            self.stdout.write(self.style.WARNING(f'  ! Error fetching macro data: {e}'))
+        if skip_macro:
+            self.stdout.write('Skipping macro data fetch.')
             macro_context = {}
+        else:
+            self.stdout.write('Fetching macro data...')
+            try:
+                macro_context = macro_provider.fetch_all_macro_indicators(log_empty=verbose)
+                self.stdout.write(self.style.SUCCESS(f'  ✓ Fetched {len(macro_context)} macro indicators'))
+            except Exception as e:
+                self.stdout.write(self.style.WARNING(f'  ! Error fetching macro data: {e}'))
+                macro_context = {}
 
         decisions_created = 0
         errors = []

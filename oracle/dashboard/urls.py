@@ -20,5 +20,6 @@ urlpatterns = [
     path('api/chart/feature-power/', views.api_feature_power_chart, name='api_feature_power'),
     path('api/chart/consensus/', views.api_consensus_breakdown, name='api_consensus_chart'),
     path('api/live-updates/', views.api_live_updates, name='api_live_updates'),
+    path('api/live-market-data/', views.api_live_market_data, name='api_live_market_data'),
     path('api/symbol/<str:symbol>/', views.api_symbol_performance, name='api_symbol_performance'),
 ]
