@@ -854,7 +854,7 @@ def api_run_analysis(request):
 
                         # Try fallback provider if primary fails for gold
                         if df.empty and fallback_provider and fallback_symbol:
-                            logger.info(f"YFinance failed for {symbol.symbol}, trying Binance {fallback_symbol} as fallback...")
+                            logger.info(f"Using alternative data source for {symbol.symbol}: Binance {fallback_symbol} (Yahoo Finance unavailable)")
                             try:
                                 df = fallback_provider.fetch_ohlcv(
                                     symbol=fallback_symbol,
@@ -862,9 +862,9 @@ def api_run_analysis(request):
                                     limit=500
                                 )
                                 if not df.empty:
-                                    logger.info(f"Fallback successful! Using {fallback_symbol} data for {symbol.symbol}")
+                                    logger.info(f"✓ Successfully fetched {fallback_symbol} data for {symbol.symbol} analysis")
                             except Exception as fallback_error:
-                                logger.warning(f"Fallback also failed: {fallback_error}")
+                                logger.warning(f"Alternative data source unavailable: {fallback_error}")
 
                         if df.empty:
                             continue

@@ -186,9 +186,9 @@ class Command(BaseCommand):
 
                         # Try fallback provider if primary fails for gold
                         if df.empty and fallback_provider and fallback_symbol:
-                            self.stdout.write(self.style.WARNING(
-                                f'    ⚠ YFinance failed, trying Binance PAXG/USDT as fallback...'
-                            ))
+                            self.stdout.write(
+                                f'    → Using alternative data source: Binance {fallback_symbol} (Yahoo Finance unavailable)'
+                            )
                             try:
                                 df = fallback_provider.fetch_ohlcv(
                                     symbol=fallback_symbol,
@@ -197,11 +197,11 @@ class Command(BaseCommand):
                                 )
                                 if not df.empty:
                                     self.stdout.write(self.style.SUCCESS(
-                                        f'    ✓ Fallback successful! Using PAXG/USDT data'
+                                        f'    ✓ Successfully fetched {fallback_symbol} data for gold analysis'
                                     ))
                             except Exception as fallback_error:
                                 self.stdout.write(self.style.WARNING(
-                                    f'    ⚠ Fallback also failed: {fallback_error}'
+                                    f'    ⚠ Alternative data source unavailable: {fallback_error}'
                                 ))
 
                         if df.empty:
