@@ -1,0 +1,354 @@
+{% extends 'dashboard/base.html' %}
+{% load dashboard_extras %}
+{% load humanize %}
+
+{% block title %}Live Monitor - Trading Oracle{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="mb-6 flex items-center justify-between">
+    <div>
+        <h2 class="text-3xl font-bold text-gray-900">Live Monitoring</h2>
+        <p class="mt-1 text-sm text-gray-600">Real-time market data, ROI tracking, and price charts</p>
+    </div>
+    <div class="flex items-center space-x-3">
+        <span class="flex items-center">
+            <span class="h-3 w-3 rounded-full bg-green-500 animate-pulse mr-2"></span>
+            <span class="text-sm font-medium text-gray-700">Live</span>
+        </span>
+        <button onclick="location.reload()"
+                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
+            <i class="fas fa-sync-alt mr-2"></i>
+            Refresh
+        </button>
+    </div>
+</div>
+
+<!-- Currency Cards Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    {% for symbol_data in symbols_data %}
+    <div class="bg-white shadow-lg rounded-lg overflow-hidden" x-data="{ expanded: false, chartPeriod: '1d' }">
+        <!-- Card Header -->
+        <div class="bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-2xl font-bold text-white">{{ symbol_data.symbol.symbol }}</h3>
+                    <p class="text-sm text-indigo-100">{{ symbol_data.symbol.name }}</p>
+                </div>
+                <span class="px-3 py-1 bg-white bg-opacity-20 rounded-lg text-white text-sm font-medium">
+                    {{ symbol_data.symbol.asset_type }}
+                </span>
+            </div>
+        </div>
+
+        <!-- Essential Indicators -->
+        <div class="px-6 py-4 border-b border-gray-200">
+            <!-- Current Price -->
+            <div class="flex items-baseline justify-between mb-4">
+                <div>
+                    <span class="text-3xl font-bold text-gray-900">
+                        ${{ symbol_data.current_price|floatformat:2 }}
+                    </span>
+                    {% if symbol_data.price_change_24h %}
+                    <span class="ml-3 text-lg {% if symbol_data.price_change_24h > 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                        {% if symbol_data.price_change_24h > 0 %}+{% endif %}{{ symbol_data.price_change_24h|floatformat:2 }}%
+                    </span>
+                    {% endif %}
+                </div>
+                <div class="text-right">
+                    <span class="text-xs text-gray-500">Volume 24h</span>
+                    <p class="text-sm font-semibold text-gray-700">
+                        {% if symbol_data.volume_24h %}
+                            ${{ symbol_data.volume_24h|floatformat:0 }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <!-- ROI Quick View -->
+            <div class="grid grid-cols-5 gap-2">
+                {% for period in symbol_data.roi_periods %}
+                <div class="text-center p-2 bg-gray-50 rounded-lg">
+                    <div class="text-xs text-gray-500 mb-1">{{ period.label }}</div>
+                    <div class="text-sm font-bold {% if period.value > 0 %}text-green-600{% elif period.value < 0 %}text-red-600{% else %}text-gray-600{% endif %}">
+                        {% if period.value is not None %}
+                            {% if period.value > 0 %}+{% endif %}{{ period.value|floatformat:1 }}%
+                        {% else %}
+                            —
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Mini Chart -->
+        <div class="px-6 py-4 border-b border-gray-200">
+            <div class="flex items-center justify-between mb-3">
+                <h4 class="text-sm font-semibold text-gray-700">Price Chart</h4>
+                <div class="flex space-x-1">
+                    <button @click="chartPeriod = '1h'; loadChart('{{ symbol_data.symbol.symbol }}', '1h')"
+                            :class="chartPeriod === '1h' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-600'"
+                            class="px-2 py-1 text-xs rounded hover:bg-indigo-500 hover:text-white transition">
+                        1H
+                    </button>
+                    <button @click="chartPeriod = '1d'; loadChart('{{ symbol_data.symbol.symbol }}', '1d')"
+                            :class="chartPeriod === '1d' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-600'"
+                            class="px-2 py-1 text-xs rounded hover:bg-indigo-500 hover:text-white transition">
+                        1D
+                    </button>
+                    <button @click="chartPeriod = '1w'; loadChart('{{ symbol_data.symbol.symbol }}', '1w')"
+                            :class="chartPeriod === '1w' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-600'"
+                            class="px-2 py-1 text-xs rounded hover:bg-indigo-500 hover:text-white transition">
+                        1W
+                    </button>
+                    <button @click="chartPeriod = '1m'; loadChart('{{ symbol_data.symbol.symbol }}', '1m')"
+                            :class="chartPeriod === '1m' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-600'"
+                            class="px-2 py-1 text-xs rounded hover:bg-indigo-500 hover:text-white transition">
+                        1M
+                    </button>
+                    <button @click="chartPeriod = '1y'; loadChart('{{ symbol_data.symbol.symbol }}', '1y')"
+                            :class="chartPeriod === '1y' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-600'"
+                            class="px-2 py-1 text-xs rounded hover:bg-indigo-500 hover:text-white transition">
+                        1Y
+                    </button>
+                </div>
+            </div>
+            <div class="h-48 relative">
+                <canvas id="chart-{{ symbol_data.symbol.symbol }}" class="w-full h-full"></canvas>
+            </div>
+        </div>
+
+        <!-- Latest Decision -->
+        {% if symbol_data.latest_decision %}
+        <div class="px-6 py-4 bg-gray-50">
+            <div class="flex items-center justify-between mb-2">
+                <h4 class="text-sm font-semibold text-gray-700">Latest Signal</h4>
+                <span class="text-xs text-gray-500">{{ symbol_data.latest_decision.created_at|timesince }} ago</span>
+            </div>
+            <div class="flex items-center space-x-3">
+                <span class="signal-{{ symbol_data.latest_decision.signal }} px-3 py-1 rounded-lg text-sm font-semibold">
+                    {{ symbol_data.latest_decision.signal }}
+                </span>
+                <span class="text-sm text-gray-600">
+                    {{ symbol_data.latest_decision.confidence }}% confidence
+                </span>
+                <span class="px-2 py-1 bg-white rounded text-xs text-gray-600">
+                    {{ symbol_data.latest_decision.timeframe.name }}
+                </span>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Show More Button -->
+        <div class="px-6 py-3 bg-gray-50 border-t border-gray-200">
+            <button @click="expanded = !expanded"
+                    class="w-full flex items-center justify-center text-sm font-medium text-indigo-600 hover:text-indigo-700">
+                <span x-show="!expanded">
+                    <i class="fas fa-chevron-down mr-2"></i>
+                    Show More Details
+                </span>
+                <span x-show="expanded">
+                    <i class="fas fa-chevron-up mr-2"></i>
+                    Show Less
+                </span>
+            </button>
+        </div>
+
+        <!-- Expanded Details -->
+        <div x-show="expanded" x-collapse class="border-t border-gray-200">
+            <!-- Technical Indicators -->
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h4 class="text-sm font-semibold text-gray-700 mb-3">Technical Indicators</h4>
+                <div class="grid grid-cols-2 gap-3 text-sm">
+                    {% for indicator in symbol_data.key_indicators %}
+                    <div class="flex justify-between items-center p-2 bg-gray-50 rounded">
+                        <span class="text-gray-600">{{ indicator.name }}:</span>
+                        <span class="font-semibold {% if indicator.direction == 'BULLISH' %}text-green-600{% elif indicator.direction == 'BEARISH' %}text-red-600{% else %}text-gray-600{% endif %}">
+                            {{ indicator.value }}
+                        </span>
+                    </div>
+                    {% empty %}
+                    <div class="col-span-2 text-center text-gray-500 text-sm py-2">
+                        No indicator data available
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Trade Levels -->
+            {% if symbol_data.latest_decision %}
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h4 class="text-sm font-semibold text-gray-700 mb-3">Trade Levels</h4>
+                <div class="space-y-2">
+                    {% if symbol_data.latest_decision.entry_price %}
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600">Entry Price:</span>
+                        <span class="text-sm font-semibold text-gray-900">${{ symbol_data.latest_decision.entry_price|floatformat:2 }}</span>
+                    </div>
+                    {% endif %}
+                    {% if symbol_data.latest_decision.stop_loss %}
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600">Stop Loss:</span>
+                        <span class="text-sm font-semibold text-red-600">${{ symbol_data.latest_decision.stop_loss|floatformat:2 }}</span>
+                    </div>
+                    {% endif %}
+                    {% if symbol_data.latest_decision.take_profit %}
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600">Take Profit:</span>
+                        <span class="text-sm font-semibold text-green-600">${{ symbol_data.latest_decision.take_profit|floatformat:2 }}</span>
+                    </div>
+                    {% endif %}
+                    {% if symbol_data.latest_decision.risk_reward %}
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600">Risk/Reward:</span>
+                        <span class="text-sm font-semibold text-indigo-600">1:{{ symbol_data.latest_decision.risk_reward|floatformat:2 }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Market Statistics -->
+            <div class="px-6 py-4">
+                <h4 class="text-sm font-semibold text-gray-700 mb-3">Market Statistics</h4>
+                <div class="grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                        <span class="text-gray-600">Total Decisions:</span>
+                        <span class="ml-1 font-semibold text-gray-900">{{ symbol_data.total_decisions }}</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-600">Avg Confidence:</span>
+                        <span class="ml-1 font-semibold text-gray-900">{{ symbol_data.avg_confidence|floatformat:1 }}%</span>
+                    </div>
+                    <div class="col-span-2">
+                        <a href="{% url 'dashboard:history' %}?symbol={{ symbol_data.symbol.symbol }}"
+                           class="inline-flex items-center text-indigo-600 hover:text-indigo-700 text-sm font-medium">
+                            <i class="fas fa-history mr-1"></i>
+                            View Full History
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-span-2 text-center py-12 bg-white rounded-lg shadow">
+        <i class="fas fa-inbox text-gray-400 text-5xl mb-3"></i>
+        <p class="text-gray-500">No active currencies. Please activate currencies in the management page.</p>
+        <a href="{% url 'dashboard:symbols' %}"
+           class="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
+            <i class="fas fa-cog mr-2"></i>
+            Manage Currencies
+        </a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    const charts = {};
+
+    // Initialize charts for each symbol
+    document.addEventListener('DOMContentLoaded', function() {
+        {% for symbol_data in symbols_data %}
+        initChart('{{ symbol_data.symbol.symbol }}');
+        {% endfor %}
+    });
+
+    function initChart(symbol) {
+        const ctx = document.getElementById(`chart-${symbol}`);
+        if (!ctx) return;
+
+        charts[symbol] = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Price',
+                    data: [],
+                    borderColor: 'rgb(99, 102, 241)',
+                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 0,
+                    pointHoverRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        callbacks: {
+                            label: function(context) {
+                                return `$${context.parsed.y.toFixed(2)}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        display: true,
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            maxTicksLimit: 6
+                        }
+                    },
+                    y: {
+                        display: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + value.toFixed(2);
+                            }
+                        }
+                    }
+                },
+                interaction: {
+                    mode: 'nearest',
+                    axis: 'x',
+                    intersect: false
+                }
+            }
+        });
+
+        // Load initial data (1d by default)
+        loadChart(symbol, '1d');
+    }
+
+    async function loadChart(symbol, period) {
+        try {
+            const response = await fetch(`/dashboard/api/chart-data/${symbol}/?period=${period}`);
+            const data = await response.json();
+
+            if (charts[symbol] && data.labels && data.prices) {
+                charts[symbol].data.labels = data.labels;
+                charts[symbol].data.datasets[0].data = data.prices;
+                charts[symbol].update('none'); // Update without animation for smoother transitions
+            }
+        } catch (error) {
+            console.error(`Error loading chart for ${symbol}:`, error);
+        }
+    }
+
+    // Auto-refresh every 60 seconds
+    setInterval(() => {
+        location.reload();
+    }, 60000);
+</script>
+{% endblock %}

@@ -1,0 +1,204 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Currency Management - Trading Oracle{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="mb-6">
+    <h2 class="text-3xl font-bold text-gray-900">Currency Management</h2>
+    <p class="mt-1 text-sm text-gray-600">Manage active and inactive currencies for analysis</p>
+</div>
+
+<!-- Filter and Stats -->
+<div class="bg-white shadow rounded-lg p-4 mb-6">
+    <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+            <div>
+                <span class="text-sm text-gray-500">Total Symbols:</span>
+                <span class="ml-2 text-lg font-semibold text-gray-900">{{ symbols|length }}</span>
+            </div>
+            <div>
+                <span class="text-sm text-gray-500">Active:</span>
+                <span class="ml-2 text-lg font-semibold text-green-600">{{ active_count }}</span>
+            </div>
+            <div>
+                <span class="text-sm text-gray-500">Inactive:</span>
+                <span class="ml-2 text-lg font-semibold text-gray-400">{{ inactive_count }}</span>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-2" x-data="{ filter: 'all' }">
+            <label class="text-sm text-gray-600">Filter:</label>
+            <select x-model="filter" @change="filterSymbols($event.target.value)"
+                    class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                <option value="all">All Symbols</option>
+                <option value="active">Active Only</option>
+                <option value="inactive">Inactive Only</option>
+                <option value="crypto">Crypto</option>
+                <option value="gold">Gold</option>
+                <option value="commodity">Commodity</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+<!-- Symbols Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for symbol in symbols %}
+    <div class="bg-white shadow rounded-lg p-5 symbol-card"
+         data-active="{{ symbol.is_active|yesno:'active,inactive' }}"
+         data-type="{{ symbol.asset_type|lower }}">
+        <div class="flex items-start justify-between mb-4">
+            <div class="flex-1">
+                <h3 class="text-xl font-bold text-gray-900">{{ symbol.symbol }}</h3>
+                <p class="text-sm text-gray-600">{{ symbol.name }}</p>
+                <div class="mt-2 flex items-center space-x-2">
+                    <span class="px-2 py-1 bg-gray-100 rounded text-xs text-gray-600">
+                        {{ symbol.asset_type }}
+                    </span>
+                    <span class="text-xs text-gray-500">
+                        {{ symbol.base_currency }}/{{ symbol.quote_currency }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Status Badge -->
+            <div>
+                {% if symbol.is_active %}
+                <span class="flex items-center px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
+                    <span class="h-2 w-2 rounded-full bg-green-500 mr-1.5"></span>
+                    Active
+                </span>
+                {% else %}
+                <span class="flex items-center px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">
+                    <span class="h-2 w-2 rounded-full bg-gray-400 mr-1.5"></span>
+                    Inactive
+                </span>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if symbol.description %}
+        <p class="text-sm text-gray-500 mb-4">{{ symbol.description|truncatewords:15 }}</p>
+        {% endif %}
+
+        <!-- Statistics -->
+        <div class="border-t pt-4 mb-4">
+            <div class="grid grid-cols-2 gap-3 text-sm">
+                <div>
+                    <span class="text-gray-500">Decisions:</span>
+                    <span class="ml-1 font-semibold text-gray-900">{{ symbol.decisions.count }}</span>
+                </div>
+                <div>
+                    <span class="text-gray-500">Last Analysis:</span>
+                    <span class="ml-1 text-xs text-gray-600">
+                        {% with last_decision=symbol.decisions.first %}
+                            {% if last_decision %}
+                                {{ last_decision.created_at|timesince }} ago
+                            {% else %}
+                                Never
+                            {% endif %}
+                        {% endwith %}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex items-center space-x-2">
+            <button onclick="toggleSymbolStatus('{{ symbol.id }}', {{ symbol.is_active|yesno:'false,true' }})"
+                    class="flex-1 inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md
+                           {% if symbol.is_active %}text-gray-700 bg-gray-100 hover:bg-gray-200{% else %}text-white bg-indigo-600 hover:bg-indigo-700{% endif %}">
+                {% if symbol.is_active %}
+                    <i class="fas fa-pause-circle mr-2"></i>
+                    Deactivate
+                {% else %}
+                    <i class="fas fa-play-circle mr-2"></i>
+                    Activate
+                {% endif %}
+            </button>
+
+            <a href="{% url 'dashboard:history' %}?symbol={{ symbol.symbol }}"
+               class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                <i class="fas fa-history"></i>
+            </a>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-span-3 text-center py-12 text-gray-500">
+        <i class="fas fa-coins text-4xl mb-3"></i>
+        <p>No symbols found</p>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Info Box -->
+<div class="mt-6 bg-blue-50 border-l-4 border-blue-400 p-4">
+    <div class="flex">
+        <div class="flex-shrink-0">
+            <i class="fas fa-info-circle text-blue-400 text-xl"></i>
+        </div>
+        <div class="ml-3">
+            <p class="text-sm text-blue-700">
+                <strong>Note:</strong> Only active currencies will be included in automated analysis runs.
+                Inactive currencies won't be analyzed until you activate them again.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function filterSymbols(filter) {
+        const cards = document.querySelectorAll('.symbol-card');
+
+        cards.forEach(card => {
+            const isActive = card.getAttribute('data-active');
+            const type = card.getAttribute('data-type');
+
+            let show = true;
+
+            if (filter === 'active') {
+                show = isActive === 'active';
+            } else if (filter === 'inactive') {
+                show = isActive === 'inactive';
+            } else if (filter !== 'all') {
+                show = type === filter;
+            }
+
+            card.style.display = show ? 'block' : 'none';
+        });
+    }
+
+    async function toggleSymbolStatus(symbolId, newStatus) {
+        try {
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}';
+
+            const response = await fetch('/dashboard/api/symbols/toggle/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({
+                    symbol_id: symbolId,
+                    is_active: newStatus
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Reload page to reflect changes
+                location.reload();
+            } else {
+                alert('Error: ' + (data.error || 'Unknown error'));
+            }
+        } catch (error) {
+            console.error('Error toggling symbol:', error);
+            alert('Error updating symbol status');
+        }
+    }
+</script>
+{% endblock %}

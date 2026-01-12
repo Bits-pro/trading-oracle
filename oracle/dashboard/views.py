@@ -1071,3 +1071,214 @@ def indicators_overview(request):
     }
 
     return render(request, 'dashboard/indicators.html', context)
+
+def symbols_management(request):
+    """
+    Currency management page - view and toggle active/inactive symbols
+    """
+    symbols = Symbol.objects.all().prefetch_related('decisions').order_by('symbol')
+
+    active_count = symbols.filter(is_active=True).count()
+    inactive_count = symbols.filter(is_active=False).count()
+
+    context = {
+        'symbols': symbols,
+        'active_count': active_count,
+        'inactive_count': inactive_count,
+    }
+
+    return render(request, 'dashboard/symbols.html', context)
+
+
+def api_toggle_symbol_status(request):
+    """
+    API endpoint to toggle symbol active/inactive status
+    """
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Method not allowed'}, status=405)
+
+    try:
+        import json
+        data = json.loads(request.body)
+        symbol_id = data.get('symbol_id')
+        is_active = data.get('is_active')
+
+        if symbol_id is None or is_active is None:
+            return JsonResponse({'success': False, 'error': 'Missing required fields'}, status=400)
+
+        symbol = Symbol.objects.get(id=symbol_id)
+        symbol.is_active = is_active
+        symbol.save()
+
+        return JsonResponse({
+            'success': True,
+            'symbol': symbol.symbol,
+            'is_active': symbol.is_active
+        })
+
+    except Symbol.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Symbol not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+def live_enhanced(request):
+    """
+    Enhanced live monitoring with ROI, charts, and expandable details
+    """
+    # Get active symbols only
+    symbols = Symbol.objects.filter(is_active=True).prefetch_related('decisions')
+
+    symbols_data = []
+
+    for symbol in symbols:
+        # Get latest decision
+        latest_decision = Decision.objects.filter(symbol=symbol).order_by('-created_at').first()
+
+        # Calculate ROI periods
+        roi_periods = calculate_roi_periods(symbol)
+
+        # Get current price from latest decision or market data
+        current_price = None
+        volume_24h = None
+        price_change_24h = None
+
+        if latest_decision and latest_decision.entry_price:
+            current_price = float(latest_decision.entry_price)
+
+        # Try to get more recent market data
+        recent_market_data = MarketData.objects.filter(symbol=symbol).order_by('-timestamp').first()
+        if recent_market_data:
+            current_price = float(recent_market_data.close)
+            volume_24h = float(recent_market_data.volume) if recent_market_data.volume else None
+
+            # Calculate 24h price change
+            day_ago_data = MarketData.objects.filter(
+                symbol=symbol,
+                timestamp__lte=recent_market_data.timestamp - timedelta(hours=24)
+            ).order_by('-timestamp').first()
+
+            if day_ago_data:
+                price_change_24h = ((float(recent_market_data.close) - float(day_ago_data.close)) / float(day_ago_data.close)) * 100
+
+        # Get key indicators from latest decision
+        key_indicators = []
+        if latest_decision:
+            contributions = FeatureContribution.objects.filter(
+                decision=latest_decision
+            ).select_related('feature').order_by('-contribution')[:6]
+
+            for contrib in contributions:
+                key_indicators.append({
+                    'name': contrib.feature.name,
+                    'value': contrib.raw_value,
+                    'direction': contrib.direction,
+                })
+
+        # Calculate statistics
+        total_decisions = Decision.objects.filter(symbol=symbol).count()
+        avg_confidence = Decision.objects.filter(symbol=symbol).aggregate(
+            avg=Avg('confidence')
+        )['avg'] or 0
+
+        symbols_data.append({
+            'symbol': symbol,
+            'current_price': current_price or 0,
+            'volume_24h': volume_24h,
+            'price_change_24h': price_change_24h,
+            'roi_periods': roi_periods,
+            'latest_decision': latest_decision,
+            'key_indicators': key_indicators,
+            'total_decisions': total_decisions,
+            'avg_confidence': avg_confidence,
+        })
+
+    context = {
+        'symbols_data': symbols_data,
+    }
+
+    return render(request, 'dashboard/live_enhanced.html', context)
+
+
+def calculate_roi_periods(symbol):
+    """
+    Calculate ROI for different time periods
+    """
+    now = timezone.now()
+    periods = [
+        {'label': '1H', 'hours': 1},
+        {'label': '1D', 'hours': 24},
+        {'label': '1W', 'hours': 24 * 7},
+        {'label': '1M', 'hours': 24 * 30},
+        {'label': '1Y', 'hours': 24 * 365},
+    ]
+
+    roi_data = []
+
+    for period in periods:
+        past_time = now - timedelta(hours=period['hours'])
+
+        # Get current and past prices
+        current_data = MarketData.objects.filter(symbol=symbol).order_by('-timestamp').first()
+        past_data = MarketData.objects.filter(
+            symbol=symbol,
+            timestamp__lte=past_time
+        ).order_by('-timestamp').first()
+
+        roi_value = None
+        if current_data and past_data:
+            current_price = float(current_data.close)
+            past_price = float(past_data.close)
+            roi_value = ((current_price - past_price) / past_price) * 100
+
+        roi_data.append({
+            'label': period['label'],
+            'value': roi_value
+        })
+
+    return roi_data
+
+
+def api_chart_data(request, symbol):
+    """
+    API endpoint to get chart data for a symbol
+    """
+    period = request.GET.get('period', '1d')
+
+    # Map period to hours
+    period_map = {
+        '1h': 1,
+        '1d': 24,
+        '1w': 24 * 7,
+        '1m': 24 * 30,
+        '1y': 24 * 365,
+    }
+
+    hours = period_map.get(period, 24)
+    start_time = timezone.now() - timedelta(hours=hours)
+
+    try:
+        symbol_obj = Symbol.objects.get(symbol=symbol)
+
+        # Get market data
+        market_data = MarketData.objects.filter(
+            symbol=symbol_obj,
+            timestamp__gte=start_time
+        ).order_by('timestamp')
+
+        labels = []
+        prices = []
+
+        for data in market_data:
+            labels.append(data.timestamp.strftime('%Y-%m-%d %H:%M'))
+            prices.append(float(data.close))
+
+        return JsonResponse({
+            'labels': labels,
+            'prices': prices
+        })
+
+    except Symbol.DoesNotExist:
+        return JsonResponse({'error': 'Symbol not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)

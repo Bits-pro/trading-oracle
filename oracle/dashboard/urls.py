@@ -13,6 +13,8 @@ urlpatterns = [
     path('features/', views.feature_analysis, name='features'),
     path('history/', views.decision_history, name='history'),
     path('live/', views.live_monitor, name='live'),
+    path('live-enhanced/', views.live_enhanced, name='live_enhanced'),
+    path('symbols/', views.symbols_management, name='symbols'),
     path('decision/<int:decision_id>/', views.decision_detail, name='decision_detail'),
 
     # API endpoints for charts and live updates
@@ -24,4 +26,6 @@ urlpatterns = [
     path('api/live-market-data/', views.api_live_market_data, name='api_live_market_data'),
     path('api/symbol/<str:symbol>/', views.api_symbol_performance, name='api_symbol_performance'),
     path('api/run-analysis/', views.api_run_analysis, name='api_run_analysis'),
+    path('api/symbols/toggle/', views.api_toggle_symbol_status, name='api_toggle_symbol'),
+    path('api/chart-data/<str:symbol>/', views.api_chart_data, name='api_chart_data'),
 ]

@@ -71,6 +71,14 @@
                                    class="{% if request.resolver_match.url_name == 'home' %}bg-indigo-700{% else %}hover:bg-indigo-500{% endif %} text-white px-3 py-2 rounded-md text-sm font-medium">
                                     <i class="fas fa-home mr-1"></i> Overview
                                 </a>
+                                <a href="{% url 'dashboard:live_enhanced' %}"
+                                   class="{% if request.resolver_match.url_name == 'live_enhanced' or request.resolver_match.url_name == 'live' %}bg-indigo-700{% else %}hover:bg-indigo-500{% endif %} text-white px-3 py-2 rounded-md text-sm font-medium">
+                                    <i class="fas fa-broadcast-tower mr-1"></i> Live
+                                </a>
+                                <a href="{% url 'dashboard:symbols' %}"
+                                   class="{% if request.resolver_match.url_name == 'symbols' %}bg-indigo-700{% else %}hover:bg-indigo-500{% endif %} text-white px-3 py-2 rounded-md text-sm font-medium">
+                                    <i class="fas fa-coins mr-1"></i> Currencies
+                                </a>
                                 <a href="{% url 'dashboard:indicators' %}"
                                    class="{% if request.resolver_match.url_name == 'indicators' %}bg-indigo-700{% else %}hover:bg-indigo-500{% endif %} text-white px-3 py-2 rounded-md text-sm font-medium">
                                     <i class="fas fa-tachometer-alt mr-1"></i> Indicators
@@ -82,10 +90,6 @@
                                 <a href="{% url 'dashboard:history' %}"
                                    class="{% if request.resolver_match.url_name == 'history' %}bg-indigo-700{% else %}hover:bg-indigo-500{% endif %} text-white px-3 py-2 rounded-md text-sm font-medium">
                                     <i class="fas fa-history mr-1"></i> History
-                                </a>
-                                <a href="{% url 'dashboard:live' %}"
-                                   class="{% if request.resolver_match.url_name == 'live' %}bg-indigo-700{% else %}hover:bg-indigo-500{% endif %} text-white px-3 py-2 rounded-md text-sm font-medium">
-                                    <i class="fas fa-broadcast-tower mr-1"></i> Live
                                 </a>
                             </div>
                         </div>
