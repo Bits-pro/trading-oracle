@@ -797,6 +797,10 @@ def api_run_analysis(request):
         logger.info("Fetching macro data...")
         try:
             macro_context = macro_provider.fetch_all_macro_indicators()
+            if macro_context:
+                logger.info(f"✓ Fetched {len(macro_context)} macro indicators: {', '.join(macro_context.keys())}")
+            else:
+                logger.warning("⚠ No macro indicators available (Yahoo Finance may be blocked)")
         except Exception as e:
             logger.warning(f"Error fetching macro data: {e}")
             macro_context = {}
@@ -810,15 +814,19 @@ def api_run_analysis(request):
                 df = traditional_provider.fetch_ohlcv(symbol=sym, timeframe='1d', limit=100)
                 if not df.empty:
                     intermarket_context[sym] = df
+                    logger.info(f"  ✓ {sym}: {len(df)} rows")
+                else:
+                    logger.warning(f"  ⚠ {sym}: No data available")
             except Exception as e:
-                logger.warning(f"Error fetching {sym}: {e}")
+                logger.warning(f"  ⚠ {sym}: {e}")
 
         # Fetch news sentiment
         logger.info("Fetching news sentiment...")
         try:
             sentiment_data = news_provider.fetch_sentiment(lookback_hours=24)
+            logger.info(f"✓ News sentiment: {sentiment_data.get('count', 0)} articles analyzed")
         except Exception as e:
-            logger.warning(f"Error fetching news sentiment: {e}")
+            logger.warning(f"⚠ News sentiment unavailable: {e}")
             sentiment_data = {'fear_index': 0.0, 'count': 0, 'urgency': 0.0}
 
         decisions_created = 0
