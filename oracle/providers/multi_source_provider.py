@@ -118,6 +118,96 @@ class MultiSourceProvider:
                 ),
             ],
 
+            # XRP (Ripple) sources
+            'XRPUSDT': [
+                DataSourceConfig(
+                    name='Binance',
+                    provider=self.binance,
+                    symbol_map={'XRPUSDT': 'XRP/USDT'},
+                    confidence=SourceConfidence.HIGH,
+                    max_retries=2
+                ),
+                DataSourceConfig(
+                    name='YFinance',
+                    provider=self.yfinance,
+                    symbol_map={'XRPUSDT': 'XRP-USD'},
+                    confidence=SourceConfidence.MEDIUM,
+                    max_retries=2
+                ),
+            ],
+
+            # PAXG (PAX Gold Token) sources
+            'PAXGUSDT': [
+                DataSourceConfig(
+                    name='Binance',
+                    provider=self.binance,
+                    symbol_map={'PAXGUSDT': 'PAXG/USDT'},
+                    confidence=SourceConfidence.HIGH,
+                    max_retries=2
+                ),
+                DataSourceConfig(
+                    name='YFinance',
+                    provider=self.yfinance,
+                    symbol_map={'PAXGUSDT': 'PAXG-USD'},
+                    confidence=SourceConfidence.MEDIUM,
+                    max_retries=2
+                ),
+            ],
+
+            # Solana sources
+            'SOLUSDT': [
+                DataSourceConfig(
+                    name='Binance',
+                    provider=self.binance,
+                    symbol_map={'SOLUSDT': 'SOL/USDT'},
+                    confidence=SourceConfidence.HIGH,
+                    max_retries=2
+                ),
+                DataSourceConfig(
+                    name='YFinance',
+                    provider=self.yfinance,
+                    symbol_map={'SOLUSDT': 'SOL-USD'},
+                    confidence=SourceConfidence.MEDIUM,
+                    max_retries=2
+                ),
+            ],
+
+            # Binance Coin sources
+            'BNBUSDT': [
+                DataSourceConfig(
+                    name='Binance',
+                    provider=self.binance,
+                    symbol_map={'BNBUSDT': 'BNB/USDT'},
+                    confidence=SourceConfidence.HIGH,
+                    max_retries=2
+                ),
+                DataSourceConfig(
+                    name='YFinance',
+                    provider=self.yfinance,
+                    symbol_map={'BNBUSDT': 'BNB-USD'},
+                    confidence=SourceConfidence.MEDIUM,
+                    max_retries=2
+                ),
+            ],
+
+            # Cardano sources
+            'ADAUSDT': [
+                DataSourceConfig(
+                    name='Binance',
+                    provider=self.binance,
+                    symbol_map={'ADAUSDT': 'ADA/USDT'},
+                    confidence=SourceConfidence.HIGH,
+                    max_retries=2
+                ),
+                DataSourceConfig(
+                    name='YFinance',
+                    provider=self.yfinance,
+                    symbol_map={'ADAUSDT': 'ADA-USD'},
+                    confidence=SourceConfidence.MEDIUM,
+                    max_retries=2
+                ),
+            ],
+
             # Silver sources
             'XAGUSD': [
                 DataSourceConfig(
