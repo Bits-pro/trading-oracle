@@ -856,6 +856,37 @@ def api_run_analysis(request):
 
                         logger.info(f"✓ Analyzing {symbol.symbol} {timeframe.name} using data from {source_used}")
 
+                        # Store market data for live monitoring and ROI calculations
+                        from decimal import Decimal
+                        market_data_objects = []
+                        for idx, row in df.iterrows():
+                            # Check if this data point already exists
+                            exists = MarketData.objects.filter(
+                                symbol=symbol,
+                                market_type=market_type,
+                                timeframe=timeframe,
+                                timestamp=row['timestamp']
+                            ).exists()
+
+                            if not exists:
+                                market_data_objects.append(
+                                    MarketData(
+                                        symbol=symbol,
+                                        market_type=market_type,
+                                        timeframe=timeframe,
+                                        timestamp=row['timestamp'],
+                                        open=Decimal(str(row['open'])),
+                                        high=Decimal(str(row['high'])),
+                                        low=Decimal(str(row['low'])),
+                                        close=Decimal(str(row['close'])),
+                                        volume=Decimal(str(row['volume'])),
+                                    )
+                                )
+
+                        if market_data_objects:
+                            MarketData.objects.bulk_create(market_data_objects, batch_size=100)
+                            logger.info(f"  → Stored {len(market_data_objects)} new candles in MarketData")
+
                         # Build context
                         context = {
                             'macro': macro_context,

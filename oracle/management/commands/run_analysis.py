@@ -3,11 +3,12 @@ Management command to manually run trading analysis
 """
 from django.core.management.base import BaseCommand
 from django.utils import timezone
-from oracle.models import Symbol, MarketType, Timeframe, Decision
+from oracle.models import Symbol, MarketType, Timeframe, Decision, MarketData
 from oracle.engine import DecisionEngine
 from oracle.providers import BinanceProvider, YFinanceProvider, MacroDataProvider
 from oracle.providers.news_provider import NewsSentimentProvider
 import uuid
+from decimal import Decimal
 
 
 def sanitize_for_json(data):
@@ -29,6 +30,51 @@ def sanitize_for_json(data):
         return [sanitize_for_json(item) for item in data]
     else:
         return data
+
+
+def store_market_data(symbol, market_type, timeframe, df, stdout=None):
+    """
+    Store fetched OHLCV data in MarketData table
+    Avoids duplicates by checking timestamps
+    """
+    if df.empty:
+        return 0
+
+    # Prepare data for bulk creation
+    market_data_objects = []
+
+    for idx, row in df.iterrows():
+        # Check if this data point already exists
+        exists = MarketData.objects.filter(
+            symbol=symbol,
+            market_type=market_type,
+            timeframe=timeframe,
+            timestamp=row['timestamp']
+        ).exists()
+
+        if not exists:
+            market_data_objects.append(
+                MarketData(
+                    symbol=symbol,
+                    market_type=market_type,
+                    timeframe=timeframe,
+                    timestamp=row['timestamp'],
+                    open=Decimal(str(row['open'])),
+                    high=Decimal(str(row['high'])),
+                    low=Decimal(str(row['low'])),
+                    close=Decimal(str(row['close'])),
+                    volume=Decimal(str(row['volume'])),
+                )
+            )
+
+    # Bulk create if we have new data
+    if market_data_objects:
+        MarketData.objects.bulk_create(market_data_objects, batch_size=100)
+        if stdout:
+            stdout.write(f'    → Stored {len(market_data_objects)} new candles in MarketData')
+        return len(market_data_objects)
+
+    return 0
 
 
 class Command(BaseCommand):
@@ -184,6 +230,9 @@ class Command(BaseCommand):
                         self.stdout.write(self.style.SUCCESS(
                             f'    ✓ Fetched {len(df)} candles from {source_used}'
                         ))
+
+                        # Store market data for live monitoring and ROI calculations
+                        stored_count = store_market_data(symbol, market_type, timeframe, df, self.stdout)
 
                         # Build context
                         context = {
