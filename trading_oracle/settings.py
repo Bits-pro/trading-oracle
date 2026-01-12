@@ -59,6 +59,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # Performance monitoring middleware
+    'oracle.middleware.QueryCountMiddleware',  # Track queries per request
+    'oracle.middleware.SystemMetricsMiddleware',  # Collect system metrics
 ]
 
 ROOT_URLCONF = 'trading_oracle.urls'
@@ -158,6 +161,36 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 
+# Redis Cache Configuration
+# Used for high-performance caching of expensive queries
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379/1',
+        'KEY_PREFIX': 'oracle',
+        'TIMEOUT': 300,  # 5 minutes default
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django.core.cache.backends.redis.RedisCache',
+            'MAX_ENTRIES': 10000,
+            'CULL_FREQUENCY': 4,
+        }
+    },
+    # Separate cache for long-lived data (market types, timeframes, features)
+    'metadata': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379/2',
+        'KEY_PREFIX': 'oracle_metadata',
+        'TIMEOUT': 86400,  # 24 hours
+    },
+    # Cache for active symbols list
+    'symbols': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379/3',
+        'KEY_PREFIX': 'oracle_symbols',
+        'TIMEOUT': 3600,  # 1 hour
+    },
+}
+
 # Celery Configuration
 CELERY_BROKER_URL = 'redis://localhost:6379/0'
 CELERY_RESULT_BACKEND = 'django-db'
@@ -190,6 +223,10 @@ CELERY_BEAT_SCHEDULE = {
 }
 
 
+# Performance Monitoring Settings
+SLOW_QUERY_THRESHOLD_MS = 100  # Log queries slower than 100ms
+MAX_QUERIES_PER_REQUEST = 50  # Warn if request makes more than 50 queries
+
 # Logging Configuration
 LOGGING = {
     'version': 1,
@@ -199,6 +236,16 @@ LOGGING = {
             'format': '{levelname} {asctime} {module} {message}',
             'style': '{',
         },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'filters': {
+        'slow_queries': {
+            '()': 'django.utils.log.CallbackFilter',
+            'callback': lambda record: 'slow' in record.getMessage().lower()
+        }
     },
     'handlers': {
         'console': {
@@ -209,6 +256,12 @@ LOGGING = {
             'class': 'logging.FileHandler',
             'filename': BASE_DIR / 'logs' / 'trading_oracle.log',
             'formatter': 'verbose',
+        },
+        'slow_queries_file': {
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR / 'logs' / 'slow_queries.log',
+            'formatter': 'verbose',
+            'level': 'WARNING',
         },
     },
     'root': {
@@ -221,8 +274,13 @@ LOGGING = {
             'level': 'INFO',
             'propagate': False,
         },
+        'django.db.backends': {
+            'handlers': ['console'],
+            'level': 'DEBUG' if DEBUG else 'INFO',
+            'propagate': False,
+        },
         'oracle': {
-            'handlers': ['console', 'file'],
+            'handlers': ['console', 'file', 'slow_queries_file'],
             'level': 'DEBUG',
             'propagate': False,
         },

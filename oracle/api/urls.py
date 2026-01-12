@@ -8,6 +8,7 @@ from .views import (
     FeatureViewSet, DecisionViewSet, MarketDataViewSet,
     AnalysisRunViewSet
 )
+from .health import health_check, readiness_check, liveness_check
 
 router = DefaultRouter()
 router.register(r'symbols', SymbolViewSet, basename='symbol')
@@ -19,5 +20,11 @@ router.register(r'market-data', MarketDataViewSet, basename='market-data')
 router.register(r'analysis-runs', AnalysisRunViewSet, basename='analysis-run')
 
 urlpatterns = [
+    # Health check endpoints
+    path('health/', health_check, name='health-check'),
+    path('health/ready/', readiness_check, name='readiness-check'),
+    path('health/live/', liveness_check, name='liveness-check'),
+
+    # Router URLs
     path('', include(router.urls)),
 ]
