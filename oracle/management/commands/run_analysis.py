@@ -122,18 +122,25 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.WARNING(f'  ! Error fetching macro data: {e}'))
                 macro_context = {}
 
-        # Fetch intermarket data
-        self.stdout.write('Fetching intermarket data...')
+        # Fetch intermarket data (optional macro indicators)
+        self.stdout.write('Fetching intermarket data (optional)...')
         intermarket_context = {}
         intermarket_symbols = ['XAGUSD', 'COPPER', 'CRUDE', 'GLD', 'GDX']
+        fetched_count = 0
+
         for sym in intermarket_symbols:
             try:
                 df = traditional_provider.fetch_ohlcv(symbol=sym, timeframe='1d', limit=100)
                 if not df.empty:
                     intermarket_context[sym] = df
-                    self.stdout.write(f'  ✓ Fetched {sym}: {len(df)} rows')
-            except Exception as e:
-                self.stdout.write(self.style.WARNING(f'  ! Error fetching {sym}: {e}'))
+                    fetched_count += 1
+            except Exception:
+                pass  # Silently skip unavailable intermarket data
+
+        if fetched_count > 0:
+            self.stdout.write(self.style.SUCCESS(f'  ✓ Fetched {fetched_count}/{len(intermarket_symbols)} intermarket indicators'))
+        else:
+            self.stdout.write('  ℹ No intermarket data available (Yahoo Finance blocked - this is optional)')
 
         # Fetch news sentiment
         self.stdout.write('Fetching news sentiment...')

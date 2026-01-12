@@ -805,20 +805,25 @@ def api_run_analysis(request):
             logger.warning(f"Error fetching macro data: {e}")
             macro_context = {}
 
-        # Fetch intermarket data
-        logger.info("Fetching intermarket data...")
+        # Fetch intermarket data (optional macro indicators)
+        logger.info("Fetching intermarket data (optional)...")
         intermarket_context = {}
         intermarket_symbols = ['XAGUSD', 'COPPER', 'CRUDE', 'GLD', 'GDX']
+        fetched_count = 0
+
         for sym in intermarket_symbols:
             try:
                 df = traditional_provider.fetch_ohlcv(symbol=sym, timeframe='1d', limit=100)
                 if not df.empty:
                     intermarket_context[sym] = df
-                    logger.info(f"  ✓ {sym}: {len(df)} rows")
-                else:
-                    logger.warning(f"  ⚠ {sym}: No data available")
-            except Exception as e:
-                logger.warning(f"  ⚠ {sym}: {e}")
+                    fetched_count += 1
+            except Exception:
+                pass  # Silently skip unavailable intermarket data
+
+        if fetched_count > 0:
+            logger.info(f"  ✓ Fetched {fetched_count}/{len(intermarket_symbols)} intermarket indicators")
+        else:
+            logger.info(f"  ℹ No intermarket data available (Yahoo Finance blocked - this is optional)")
 
         # Fetch news sentiment
         logger.info("Fetching news sentiment...")
