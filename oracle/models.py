@@ -126,6 +126,7 @@ class Feature(models.Model):
         ordering = ['category', 'name']
         indexes = [
             models.Index(fields=['category', 'is_active']),
+            models.Index(fields=['name']),  # For feature lookups by name
         ]
 
     def __str__(self):
@@ -186,12 +187,81 @@ class Decision(models.Model):
         indexes = [
             models.Index(fields=['symbol', 'market_type', 'timeframe', '-created_at']),
             models.Index(fields=['signal', '-created_at']),
+            models.Index(fields=['confidence', '-created_at']),  # For confidence-based filtering
+            models.Index(fields=['bias', '-created_at']),  # For bias-based filtering
         ]
         unique_together = [['symbol', 'market_type', 'timeframe', 'created_at']]
 
     def __str__(self):
         return (f"{self.symbol.symbol} {self.market_type.name} {self.timeframe.name}: "
                 f"{self.signal} (conf: {self.confidence}%)")
+
+
+class DecisionOutcome(models.Model):
+    """Track actual outcomes of trading decisions for backtesting and ML"""
+
+    OUTCOME_CHOICES = [
+        ('PENDING', 'Pending'),
+        ('WIN', 'Target Hit'),
+        ('LOSS', 'Stop Hit'),
+        ('TIMEOUT', 'Expired'),
+        ('BREAK_EVEN', 'Break Even'),
+        ('INVALIDATED', 'Invalidation Triggered'),
+    ]
+
+    decision = models.OneToOneField(
+        Decision,
+        on_delete=models.CASCADE,
+        related_name='outcome'
+    )
+
+    # Outcome tracking
+    outcome = models.CharField(max_length=15, choices=OUTCOME_CHOICES, default='PENDING')
+
+    # Exit details
+    actual_exit_price = models.DecimalField(max_digits=20, decimal_places=8, null=True, blank=True)
+    exit_reason = models.TextField(blank=True)
+
+    # Performance metrics
+    pnl_percentage = models.DecimalField(max_digits=10, decimal_places=4, null=True, blank=True, help_text="P&L %")
+    r_multiple = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="R-multiple achieved")
+
+    # Price movement tracking
+    max_favorable_excursion = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        null=True,
+        blank=True,
+        help_text="Best price reached (%)"
+    )
+    max_adverse_excursion = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        null=True,
+        blank=True,
+        help_text="Worst price reached (%)"
+    )
+
+    # Timing
+    duration_hours = models.FloatField(null=True, blank=True)
+    closed_at = models.DateTimeField(null=True, blank=True)
+
+    # Additional context
+    notes = models.TextField(blank=True)
+    metadata = models.JSONField(default=dict, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['outcome', '-created_at']),
+            models.Index(fields=['decision', 'outcome']),
+        ]
+
+    def __str__(self):
+        return f"{self.decision.symbol.symbol}: {self.outcome} (R: {self.r_multiple})"
 
 
 class FeatureContribution(models.Model):
@@ -218,12 +288,22 @@ class FeatureContribution(models.Model):
     # Explanation
     explanation = models.TextField(blank=True)
 
+    # Performance tracking
+    calculation_time_ms = models.FloatField(null=True, blank=True, help_text="Time taken to calculate this feature")
+    data_quality_score = models.FloatField(
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(0.0), MaxValueValidator(1.0)],
+        help_text="Data quality/completeness score (0-1)"
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ['-contribution']
         indexes = [
             models.Index(fields=['decision', '-contribution']),
+            models.Index(fields=['feature']),  # CRITICAL: For feature analysis queries
         ]
 
     def __str__(self):
@@ -436,6 +516,58 @@ class FeatureWeight(models.Model):
         if self.timeframe:
             parts.append(self.timeframe.name)
         return f"{' - '.join(parts)}: {self.weight}"
+
+
+class SystemMetrics(models.Model):
+    """System health and performance metrics"""
+
+    timestamp = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    # Provider health
+    provider_name = models.CharField(max_length=50, db_index=True)
+    provider_uptime_percentage = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Provider uptime in last 24h (%)"
+    )
+    provider_avg_latency_ms = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Average latency in milliseconds"
+    )
+    provider_error_count = models.IntegerField(default=0)
+    provider_success_count = models.IntegerField(default=0)
+
+    # System resources
+    memory_usage_mb = models.FloatField(null=True, blank=True)
+    cpu_usage_percentage = models.FloatField(null=True, blank=True)
+
+    # Celery metrics
+    celery_queue_depth = models.IntegerField(null=True, blank=True, help_text="Number of pending tasks")
+    celery_active_workers = models.IntegerField(null=True, blank=True)
+    celery_failed_tasks_24h = models.IntegerField(null=True, blank=True)
+
+    # Query performance
+    slow_query_count = models.IntegerField(default=0, help_text="Queries >100ms in last hour")
+    avg_query_time_ms = models.FloatField(null=True, blank=True)
+    total_queries = models.IntegerField(default=0)
+
+    # Feature metrics
+    feature_calculation_errors = models.IntegerField(default=0)
+    avg_feature_calc_time_ms = models.FloatField(null=True, blank=True)
+
+    # Additional metadata
+    metadata = models.JSONField(default=dict, blank=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+        indexes = [
+            models.Index(fields=['provider_name', '-timestamp']),
+            models.Index(fields=['-timestamp']),
+        ]
+
+    def __str__(self):
+        return f"{self.provider_name} metrics @ {self.timestamp}"
 
 
 class SymbolPerformance(models.Model):

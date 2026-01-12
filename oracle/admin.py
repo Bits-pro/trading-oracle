@@ -4,9 +4,9 @@ Django Admin configuration for Trading Oracle
 from django.contrib import admin
 from django.utils.html import format_html
 from .models import (
-    Symbol, MarketType, Timeframe, Feature, Decision,
+    Symbol, MarketType, Timeframe, Feature, Decision, DecisionOutcome,
     FeatureContribution, MarketData, DerivativesData,
-    MacroData, SentimentData, AnalysisRun, FeatureWeight
+    MacroData, SentimentData, AnalysisRun, FeatureWeight, SystemMetrics, SymbolPerformance
 )
 
 
@@ -84,7 +84,10 @@ class FeatureAdmin(admin.ModelAdmin):
 class FeatureContributionInline(admin.TabularInline):
     model = FeatureContribution
     extra = 0
-    readonly_fields = ['feature', 'raw_value', 'direction', 'strength', 'weight', 'contribution', 'explanation']
+    readonly_fields = [
+        'feature', 'raw_value', 'direction', 'strength', 'weight',
+        'contribution', 'calculation_time_ms', 'data_quality_score', 'explanation'
+    ]
     can_delete = False
 
     def has_add_permission(self, request, obj=None):
@@ -143,7 +146,10 @@ class DecisionAdmin(admin.ModelAdmin):
 
 @admin.register(FeatureContribution)
 class FeatureContributionAdmin(admin.ModelAdmin):
-    list_display = ['decision', 'feature', 'direction', 'strength', 'weight', 'contribution', 'created_at']
+    list_display = [
+        'decision', 'feature', 'direction', 'strength', 'weight',
+        'contribution', 'calculation_time_ms', 'data_quality_score', 'created_at'
+    ]
     list_filter = ['feature__category', 'direction', 'created_at']
     search_fields = ['decision__symbol__symbol', 'feature__name']
     readonly_fields = ['created_at']
@@ -249,5 +255,140 @@ class FeatureWeightAdmin(admin.ModelAdmin):
         ('Timestamps', {
             'fields': ('created_at', 'updated_at'),
             'classes': ('collapse',)
+        }),
+    )
+
+
+@admin.register(DecisionOutcome)
+class DecisionOutcomeAdmin(admin.ModelAdmin):
+    list_display = [
+        'decision', 'outcome_badge', 'r_multiple', 'pnl_percentage',
+        'duration_hours', 'closed_at'
+    ]
+    list_filter = ['outcome', 'created_at', 'closed_at']
+    search_fields = ['decision__symbol__symbol']
+    readonly_fields = ['created_at', 'updated_at']
+    date_hierarchy = 'created_at'
+
+    fieldsets = (
+        ('Decision Reference', {
+            'fields': ('decision',)
+        }),
+        ('Outcome', {
+            'fields': ('outcome', 'exit_reason', 'actual_exit_price')
+        }),
+        ('Performance', {
+            'fields': ('pnl_percentage', 'r_multiple')
+        }),
+        ('Price Movement', {
+            'fields': ('max_favorable_excursion', 'max_adverse_excursion')
+        }),
+        ('Timing', {
+            'fields': ('duration_hours', 'closed_at')
+        }),
+        ('Additional Info', {
+            'fields': ('notes', 'metadata')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+
+    def outcome_badge(self, obj):
+        """Display outcome with color badge"""
+        colors = {
+            'PENDING': 'orange',
+            'WIN': 'green',
+            'LOSS': 'red',
+            'TIMEOUT': 'gray',
+            'BREAK_EVEN': 'blue',
+            'INVALIDATED': 'purple',
+        }
+        color = colors.get(obj.outcome, 'gray')
+        return format_html(
+            '<span style="background-color: {}; color: white; padding: 3px 10px; border-radius: 3px;">{}</span>',
+            color,
+            obj.get_outcome_display()
+        )
+    outcome_badge.short_description = 'Outcome'
+
+
+@admin.register(SystemMetrics)
+class SystemMetricsAdmin(admin.ModelAdmin):
+    list_display = [
+        'provider_name', 'timestamp', 'provider_uptime_percentage',
+        'provider_avg_latency_ms', 'celery_queue_depth',
+        'slow_query_count'
+    ]
+    list_filter = ['provider_name', 'timestamp']
+    search_fields = ['provider_name']
+    readonly_fields = ['timestamp']
+    date_hierarchy = 'timestamp'
+
+    fieldsets = (
+        ('Provider Health', {
+            'fields': (
+                'provider_name', 'provider_uptime_percentage',
+                'provider_avg_latency_ms', 'provider_error_count',
+                'provider_success_count'
+            )
+        }),
+        ('System Resources', {
+            'fields': ('memory_usage_mb', 'cpu_usage_percentage')
+        }),
+        ('Celery Metrics', {
+            'fields': (
+                'celery_queue_depth', 'celery_active_workers',
+                'celery_failed_tasks_24h'
+            )
+        }),
+        ('Query Performance', {
+            'fields': ('slow_query_count', 'avg_query_time_ms', 'total_queries')
+        }),
+        ('Feature Metrics', {
+            'fields': ('feature_calculation_errors', 'avg_feature_calc_time_ms')
+        }),
+        ('Additional Data', {
+            'fields': ('metadata',)
+        }),
+        ('Timestamp', {
+            'fields': ('timestamp',)
+        }),
+    )
+
+
+@admin.register(SymbolPerformance)
+class SymbolPerformanceAdmin(admin.ModelAdmin):
+    list_display = [
+        'symbol', 'market_type', 'current_price', 'roi_1h', 'roi_1d',
+        'roi_1w', 'roi_1m', 'timestamp'
+    ]
+    list_filter = ['symbol__asset_type', 'market_type', 'timestamp']
+    search_fields = ['symbol__symbol']
+    readonly_fields = ['timestamp']
+    date_hierarchy = 'timestamp'
+
+    fieldsets = (
+        ('Symbol Info', {
+            'fields': ('symbol', 'market_type', 'current_price')
+        }),
+        ('ROI Metrics', {
+            'fields': ('roi_1h', 'roi_1d', 'roi_1w', 'roi_1m', 'roi_1y')
+        }),
+        ('Volume', {
+            'fields': ('volume_24h', 'volume_change_24h')
+        }),
+        ('Volatility & Range', {
+            'fields': ('volatility_24h', 'high_24h', 'low_24h')
+        }),
+        ('Market Cap (Crypto)', {
+            'fields': ('market_cap', 'market_cap_rank')
+        }),
+        ('Trading Activity', {
+            'fields': ('trades_24h',)
+        }),
+        ('Timestamp', {
+            'fields': ('timestamp',)
         }),
     )
