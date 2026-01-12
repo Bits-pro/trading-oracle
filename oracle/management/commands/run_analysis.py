@@ -104,8 +104,9 @@ class Command(BaseCommand):
 
         # Initialize providers
         self.stdout.write('\nInitializing data providers...')
-        crypto_provider = BinanceProvider()
-        traditional_provider = YFinanceProvider()
+        from oracle.providers.multi_source_provider import MultiSourceProvider
+
+        multi_source_provider = MultiSourceProvider()
         macro_provider = MacroDataProvider()
         news_provider = NewsSentimentProvider()
 
@@ -163,59 +164,26 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS(f'Analyzing {symbol.symbol} ({symbol.name})'))
             self.stdout.write(f'{"="*60}')
 
-            # Determine provider
-            if symbol.asset_type == 'CRYPTO':
-                provider = crypto_provider
-                provider_symbol = f"{symbol.base_currency}/{symbol.quote_currency}"
-            else:
-                provider = traditional_provider
-                provider_symbol = symbol.symbol
-
-            # Track if we should try fallback provider for gold
-            fallback_provider = None
-            fallback_symbol = None
-            if symbol.asset_type == 'GOLD' and symbol.symbol == 'XAUUSD':
-                # If YFinance fails for gold, we'll fallback to Binance PAXG/USDT
-                fallback_provider = crypto_provider
-                fallback_symbol = 'PAXG/USDT'
-
             for market_type in market_types:
                 for timeframe in timeframes:
                     try:
                         self.stdout.write(f'\n  {market_type.name} | {timeframe.name}:')
 
-                        # Fetch market data
-                        df = provider.fetch_ohlcv(
-                            symbol=provider_symbol,
+                        # Fetch market data using multi-source provider with automatic failover
+                        df, source_used = multi_source_provider.fetch_ohlcv(
+                            symbol=symbol.symbol,
                             timeframe=timeframe.name,
-                            limit=500
+                            limit=500,
+                            verbose=verbose
                         )
-
-                        # Try fallback provider if primary fails for gold
-                        if df.empty and fallback_provider and fallback_symbol:
-                            self.stdout.write(
-                                f'    → Using alternative data source: Binance {fallback_symbol} (Yahoo Finance unavailable)'
-                            )
-                            try:
-                                df = fallback_provider.fetch_ohlcv(
-                                    symbol=fallback_symbol,
-                                    timeframe=timeframe.name,
-                                    limit=500
-                                )
-                                if not df.empty:
-                                    self.stdout.write(self.style.SUCCESS(
-                                        f'    ✓ Successfully fetched {fallback_symbol} data for gold analysis'
-                                    ))
-                            except Exception as fallback_error:
-                                self.stdout.write(self.style.WARNING(
-                                    f'    ⚠ Alternative data source unavailable: {fallback_error}'
-                                ))
 
                         if df.empty:
                             self.stdout.write(self.style.WARNING(f'    ⚠ No data available'))
                             continue
 
-                        self.stdout.write(f'    → Fetched {len(df)} candles')
+                        self.stdout.write(self.style.SUCCESS(
+                            f'    ✓ Fetched {len(df)} candles from {source_used}'
+                        ))
 
                         # Build context
                         context = {
@@ -227,8 +195,12 @@ class Command(BaseCommand):
                         # Add derivatives data if applicable
                         if market_type.name in ['PERPETUAL', 'FUTURES'] and symbol.asset_type == 'CRYPTO':
                             try:
-                                funding = provider.fetch_funding_rate(provider_symbol)
-                                oi = provider.fetch_open_interest(provider_symbol)
+                                # Use Binance for derivatives data (most reliable for crypto derivatives)
+                                binance_provider = BinanceProvider()
+                                provider_symbol = f"{symbol.base_currency}/{symbol.quote_currency}"
+
+                                funding = binance_provider.fetch_funding_rate(provider_symbol)
+                                oi = binance_provider.fetch_open_interest(provider_symbol)
 
                                 import pandas as pd
                                 context['derivatives'] = {
